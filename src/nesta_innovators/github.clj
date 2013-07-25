@@ -1,11 +1,15 @@
 (ns nesta-innovators.github
   "Retrieve data from github"
-  (:require [clj-http.client                 :as http]
-            [clj-http.links                  :as links]
-            [nesta-innovators.impl.protocols :as impl   :refer [next-page next? data ->uri paged-response enrich paged-get]]
-            [kixipipe.ratelimit              :as limit  :refer [take-token]]
-            [clojure.tools.logging           :as log]
-            [clj-time.core                   :as t]))
+  (:require [clj-http.client :as http]
+            [clj-time.core :as t]
+            [kixipipe.ratelimit :as limit]
+            [nesta-innovators.impl.protocols :as impl]
+            [kixipipe.ratelimit :refer [take-token]]
+            [nesta-innovators.impl.protocols :refer [->urix
+                                                     enrich
+                                                     next?
+                                                     paged-get
+                                                     paged-response]]))
 
 (def BASE_API_URI "https://api.github.com/")
 
