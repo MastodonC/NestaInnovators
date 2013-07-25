@@ -1,16 +1,19 @@
-(ns nesta-innovators.stackoverflow
-  "Short package description."
-  (:require [kixipipe.ratelimit              :as limit]
-            [nesta-innovators.impl.protocols :as impl :refer [next-page next? data ->uri paged-response enrich paged-get]]
-            [clojure.string                  :as str]
-            [clj-http.client                 :as http]))
+(ns nesta-innovators.stackexchange
+  "Wrapper around the stackexchange API"
+  (:require [clj-http.client :as http]
+            [clojure.string :as str]
+            [kixipipe.ratelimit :as limit]
+            [nesta-innovators.impl.protocols :as impl]
+            [nesta-innovators.impl.protocols :refer [->uri
+                                                     paged-get
+                                                     paged-response]]))
 
 (def KNOWN_SITES {:stackoverflow "stackoverflow.com"
                   :electronics "electronics.stackexchange.com"})
 
 (def BASE_API_URI "https://api.stackexchange.com/")
 
-(deftype StackexchangePagedResponse [session uri query-params resp]
+(deftype StackExchangePagedResponse [session uri query-params resp]
   Object
   (toString [this]
     (str "query-params:" query-params))
@@ -22,7 +25,7 @@
   (data [this]
     (get-in resp [:body :items])))
 
-(deftype StackexchangeSession [oauth-token limiter options]
+(deftype StackExchangeSession [oauth-token limiter options]
   impl/Enrichment
   (enrich [this m]
     (merge m
@@ -30,7 +33,7 @@
            (select-keys options [:debug :debug-body] )))
   impl/Paged
   (paged-response [this uri query-params]
-    (->StackexchangePagedResponse this uri query-params
+    (->StackExchangePagedResponse this uri query-params
                                   (http/get uri  (->> {:as :json
                                                        :query-params query-params}
                                                       (impl/enrich this)))))
@@ -40,7 +43,7 @@
 
 
 (defn stackexchange-session [limit oauth-token & [options]]
-  (->StackexchangeSession oauth-token (limit/rate-limiter limit :per-hour) options))
+  (->StackExchangeSession oauth-token (limit/rate-limiter limit :per-hour) options))
 
 (defn all-sites [session]
   (paged-get (paged-response session (->uri session ["sites"]) {})))
