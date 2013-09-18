@@ -2,9 +2,7 @@
   "Short package description."
   (:require [nesta.innovators.impl.protocols :as impl]))
 
-(def instance)
-
-(deftype Application [config github stackoverflow opencorporates meetup]
+(deftype System [config github stackoverflow opencorporates meetup]
   impl/Lifecycle
   (running? [this]
     (every? running? [github stackoverflow opencorporates meetup]))
@@ -17,5 +15,4 @@
       (start meetup)
       (start opencorporates)
       (start stackoverflow)
-      (start github)
-  )
+      (start github))

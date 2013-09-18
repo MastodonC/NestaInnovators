@@ -1,0 +1,12 @@
+{
+ :github        {:auth            "41ae276c544a470c1d3696c986df4a0803ad8e86"
+                 :rate-limit      [5000 :per-hour]
+                 :max-connections 2}
+ :stackexchange {:auth            "rMMlVB4zqkoQB4SQ3anw1w"
+                 :rate-limit      [300 :per-hour]
+                 :max-connections 2}
+ :meetup        {:auth            {:auth "543fa67477751e50693c66658564c"}
+                 :rate-limit      [300 :per-hour] ; estimated
+                 :max-connections 2}
+ :http-client   {:max-connections 10}
+ }

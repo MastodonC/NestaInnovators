@@ -26,6 +26,9 @@
     (get-in resp [:body :items])))
 
 (deftype StackExchangeSession [oauth-token limiter options]
+  impl/Lifecycle
+  (start [this])
+  (stop [this])
   impl/Enrichment
   (enrich [this m]
     (merge m
@@ -42,8 +45,10 @@
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
 
-(defn stackexchange-session [limit oauth-token & [options]]
-  (->StackExchangeSession oauth-token (limit/rate-limiter limit :per-hour) options))
+(defn stackexchange-session [config & [options]]
+  (let [{:keys [auth rate-limit]} config
+        [limit period] rate-limit]
+    (->StackExchangeSession auth (limit/rate-limiter limit period) options)))
 
 (defn all-sites [session]
   (paged-get (paged-response session (->uri session ["sites"]) {})))

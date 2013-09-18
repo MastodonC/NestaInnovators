@@ -3,11 +3,17 @@
 
 (defprotocol Person
   (all-persons [this])
-  (person-detail [this id]))
+  (person-detail [this id])
+  (person-organizations [this id]))
 
 (defprotocol Organization
   (all-organizations [this])
-  (organization-detail [this id]))
+  (organization-detail [this id])
+  (organization-persons [this]))
+
+(defprotocol Follow
+  (follows [this id])
+  (followers [this id]))
 
 (defprotocol Page
   (next-page [this])
@@ -17,7 +23,6 @@
 (defprotocol Paged
   (paged-response [this uri query-params]))
 
-
 (defprotocol ToUri
   (->uri [this parts]))
 
@@ -25,7 +30,15 @@
   (enrich [this m]))
 
 (defprotocol Lifecycle
-  (running? [this])
+  (init [this config])
+  (start [this])
+  (stop [this]))
+
+(extend-protocol Lifecycle
+  nil
+  (start [this])
+  (stop [this])
+  Object
   (start [this])
   (stop [this]))
 
