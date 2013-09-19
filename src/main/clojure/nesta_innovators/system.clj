@@ -5,11 +5,13 @@
             [nesta-innovators.github :as gh]
             [nesta-innovators.stackexchange :as se]
             [nesta-innovators.opencorporates :as oc]
-            [nesta-innovators.meetup :as mu]))
+            [nesta-innovators.meetup :as mu]
+            [nesta-innovators.graph :as gr]))
 
-(defrecord NestaSystem [config github stackexchange opencorporates meetup ]
+(defrecord NestaSystem [config neo4j github stackexchange opencorporates meetup ]
   impl/Lifecycle
   (start [this]
+    (start neo4j)
     (start github)
     (start stackexchange)
     (start opencorporates)
@@ -25,6 +27,7 @@
 (defn system []
   (let [config (config/load-config :prod)]
     (->NestaSystem config
+                   (gr/mk-session config)
                    (gh/mk-session config)
                    (se/mk-session config)
                    (oc/mk-session config)

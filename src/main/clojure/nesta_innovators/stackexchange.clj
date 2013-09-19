@@ -1,6 +1,6 @@
 (ns nesta-innovators.stackexchange
   "Wrapper around the stackexchange API"
-  (:require [clj-http.client :as http]
+  (:require [org.httpkit.client :as http]
             [clojure.string :as str]
             [kixipipe.ratelimit :as limit]
             [nesta-innovators.impl.protocols :as impl]

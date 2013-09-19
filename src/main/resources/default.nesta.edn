@@ -1,4 +1,5 @@
 {
+ :neo4j         {:uri "http://localhost:7474/db/data"}
  :github        {:auth            "41ae276c544a470c1d3696c986df4a0803ad8e86"
                  :rate-limit      [5000 :per-hour]
                  :max-connections 2}

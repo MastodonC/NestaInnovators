@@ -88,6 +88,12 @@
         limiter             (limit/rate-limiter limit period)]
     (->GithubSession oauth-token limiter options)))
 
+(defn ends-with? [s suffix]
+  (.endsWith s suffix))
+
+(defn select-urls [x]
+  (into {} (filter (fn [[k v]] (ends-with? (name k) "url")) x)))
+
 (comment
   (require '[nesta-innovators.github :as gh])
   (def sess (gh/mk-session (config/load-config :prod)))

@@ -3,7 +3,7 @@
   (:require [kixipipe.ratelimit              :as limit]
             [nesta-innovators.impl.protocols :as impl :refer [next-page next? data ->uri paged-response enrich paged-get]]
             [clojure.string                  :as str]
-            [clj-http.client                 :as http]
+            [org.httpkit.client              :as http]
             [ring.util.codec  :refer [form-decode]]
             ))
 
