@@ -16,6 +16,7 @@
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
                  ]
   :source-paths ["src/main/clojure"]
+  :test-paths ["src/test/clojure"]
   :resource-paths ["src/main/resources"]
   :profiles {:dev {:source-paths ["src/dev/clojure" "src/main/clojure"]
                    :dependencies [[org.clojure/tools.namespace "0.2.3"]]}
