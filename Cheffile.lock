@@ -2,19 +2,27 @@ SITE
   remote: http://community.opscode.com/api/v1
   specs:
     apt (2.1.1)
+    aws (0.101.4)
     chef_handler (1.1.4)
-    java (1.13.0)
-      windows (>= 0.0.0)
     windows (1.10.0)
       chef_handler (>= 0.0.0)
 
 GIT
-  remote: http://github.com/michaelklishin/neo4j-server-chef-cookbook
+  remote: http://github.com/sw1nn/neo4j-server-chef-cookbook
   ref: master
-  sha: db4bcfa8f856f697aad80b3ba8c8c03ba313f2a5
+  sha: 1d7781e62c705b7f23cd7d53c906c413e46a0b9a
   specs:
     neo4j-server (0.0.1)
       java (>= 0.0.1)
+
+GIT
+  remote: https://github.com/opscode-cookbooks/java
+  ref: master
+  sha: c6ef8a7d938edff1c8ac5c1af24026575d32af8c
+  specs:
+    java (1.13.1)
+      aws (>= 0.0.0)
+      windows (>= 0.0.0)
 
 DEPENDENCIES
   apt (>= 0)
