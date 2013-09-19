@@ -4,18 +4,18 @@
             [clj-time.core :as t]
             [kixipipe.ratelimit :as limit]
             [kixipipe.data.merge :refer [map-deep-merge]]
-            [nesta-innovators.impl.protocols :as impl]
             [kixipipe.ratelimit :refer [take-token]]
             [nesta-innovators.impl.protocols :refer [->uri
                                                      enrich
                                                      next?
                                                      paged-get
-                                                     paged-response]]))
+                                                     paged-response]])
+  (:import [nesta_innovators.impl.protocols Paged Page Lifecycle Enrichment ToUri]))
 
 (def ^{:const true} BASE_API_URI "https://api.github.com/")
 
 (deftype GithubPagedResponse [session resp]
-  impl/Page
+  Page
   (next-page [this]
     (if-let [uri (next? this)]
       (paged-response session uri nil)))
@@ -28,21 +28,21 @@
         (list data)))))
 
 (deftype GithubSession [oauth-token limiter options]
-  impl/Lifecycle
+  Lifecycle
   (start [this])
   (stop [this])
-  impl/Enrichment
+  Enrichment
   (enrich [this m]
     (map-deep-merge m
            {:headers {"Authorization" (str "token " oauth-token)}}
            (select-keys options [:debug :debug-body])))
-  impl/Paged
+  Paged
   (paged-response [this uri query-params]
     (take-token limiter)
     (let [resp (http/get uri (->> {:as :json}
                                   (enrich this)))]
       (->GithubPagedResponse this resp)))
-  impl/ToUri
+  ToUri
   (->uri [this parts]
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 

@@ -7,4 +7,4 @@
   (start [this])
   (stop [this]))
 
-(defn opencorporates-session [config & [options]])
+(defn mk-session [{config :opencorporates} & [options]])

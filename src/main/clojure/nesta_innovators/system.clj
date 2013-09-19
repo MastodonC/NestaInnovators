@@ -5,8 +5,7 @@
             [nesta-innovators.github :as gh]
             [nesta-innovators.stackexchange :as se]
             [nesta-innovators.opencorporates :as oc]
-            [nesta-innovators.meetup :as mu]
-            ))
+            [nesta-innovators.meetup :as mu]))
 
 (defrecord NestaSystem [config github stackexchange opencorporates meetup ]
   impl/Lifecycle
@@ -26,11 +25,7 @@
 (defn system []
   (let [config (config/load-config :prod)]
     (->NestaSystem config
-                   (gh/github-session (:github config))
-                   (se/stackexchange-session (:stackexchange config))
-                   (oc/opencorporates-session (:opencorporates config))
-                   (mu/meetup-session (:meetup config)))))
-
-(defn collect-persons [system]
-
-  )
+                   (gh/mk-session config)
+                   (se/mk-session config)
+                   (oc/mk-session config)
+                   (mu/mk-session config))))

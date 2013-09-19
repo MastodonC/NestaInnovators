@@ -44,7 +44,7 @@
   (->uri [this parts]
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
-(defn meetup-session [config & [options]]
+(defn mk-session [{config :meetup} & [options]]
   (let [{:keys [auth rate-limit]} config
         [limit period] rate-limit]
     (->MeetupSession auth (limit/rate-limiter limit period) options)))

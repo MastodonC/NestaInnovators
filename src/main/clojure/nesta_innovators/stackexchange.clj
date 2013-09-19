@@ -45,7 +45,7 @@
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
 
-(defn stackexchange-session [config & [options]]
+(defn mk-session [{config :stackexchange} & [options]]
   (let [{:keys [auth rate-limit]} config
         [limit period] rate-limit]
     (->StackExchangeSession auth (limit/rate-limiter limit period) options)))
