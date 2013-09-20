@@ -8,9 +8,9 @@ SITE
       chef_handler (>= 0.0.0)
 
 GIT
-  remote: http://github.com/sw1nn/neo4j-server-chef-cookbook
+  remote: http://github.com/michaelklishin/neo4j-server-chef-cookbook
   ref: master
-  sha: 1d7781e62c705b7f23cd7d53c906c413e46a0b9a
+  sha: 4ba86784ccff61f2135c39a9bdf93f011ea440f6
   specs:
     neo4j-server (0.0.1)
       java (>= 0.0.1)
