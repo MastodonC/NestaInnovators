@@ -22,6 +22,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                          },
                          :jdk_version => "7"
                        },
+                       :neo4j => {
+                         :server => {
+                           :node_auto_indexing => {
+                             :enabled => true,
+                             :keys_indexable => 'user,organization'
+                           }
+                         }
+                       }
                      })
     chef.add_recipe "apt"
     chef.add_recipe "java"
