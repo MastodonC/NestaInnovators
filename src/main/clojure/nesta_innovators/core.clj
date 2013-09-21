@@ -8,6 +8,8 @@
             [clojure.data.xml :as xml]
             [camel-snake-kebab :refer [->kebab-case-keyword]]))
 
+(def FORMATTER (:ordinal-date-time-no-ms tf/formatters))
+
 (defn- parse-long [s]
   (try (Long/parseLong s) (catch Throwable t )))
 
@@ -15,7 +17,7 @@
   (when-let [dt (tf/parse s)]
     (.getMillis dt)))
 
-(def ^{:private true} coerce
+(def ^:private coerce
   (some-fn parse-long
            parse-date
            str))
