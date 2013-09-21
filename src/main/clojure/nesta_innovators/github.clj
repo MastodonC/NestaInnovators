@@ -1,7 +1,9 @@
 (ns nesta-innovators.github
   "Retrieve data from github"
   (:require [clj-http.client :as http]
+            [clojure.tools.logging :as log]
             [clj-time.core :as t]
+            [clojure.tools.logging :as log]
             [kixipipe.ratelimit :as limit]
             [kixipipe.data.merge :refer [map-deep-merge]]
             [kixipipe.ratelimit :refer [take-token]]
@@ -47,6 +49,7 @@
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
 (defn raw-api-call [session uri options]
+  (log/debug "raw-api-call:" uri options)
   (paged-get (paged-response session uri options)))
 
 (defn api-call [session uri-parts options]

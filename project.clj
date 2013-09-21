@@ -10,6 +10,7 @@
                  [kixipipe "0.9.31-SNAPSHOT"]
                  [ring/ring-codec "1.0.0"]
                  [clojurewerkz/neocons "1.1.0"]
+                 [hiccup "1.0.4"]
 
                  ;; Logging
                  [org.clojure/tools.logging      "0.2.6"]
