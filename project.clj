@@ -5,12 +5,14 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
+                 [org.clojure/data.xml "0.0.7"]
                  [clj-http "0.7.6"]
                  [http-kit "2.1.10"]
                  [kixipipe "0.9.31-SNAPSHOT"]
                  [ring/ring-codec "1.0.0"]
                  [clojurewerkz/neocons "1.1.0"]
                  [hiccup "1.0.4"]
+                 [camel-snake-kebab "0.1.2"]
 
                  ;; Logging
                  [org.clojure/tools.logging      "0.2.6"]
