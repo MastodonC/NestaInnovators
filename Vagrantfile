@@ -20,7 +20,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                          :oracle => {
                            "accept_oracle_download_terms" => true
                          },
-                         :jdk_version => "7"
+                         :jdk_version => "7",
+                         :jdk => {
+                           :"7" => {
+                             :x86_64 => {
+                               :url => "http://download.oracle.com/otn-pub/java/jdk/7u40-b43/jdk-7u40-linux-x64.tar.gz",
+                               :checksum => "72f6e010592cad5e994276eee7db5f0b0d7c15c06949bd81f0e14811048bcf2c"
+                             }
+                           }
+                         }
                        },
                        :neo4j => {
                          :server => {
