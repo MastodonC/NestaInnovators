@@ -4,6 +4,6 @@
 site 'http://community.opscode.com/api/v1'
 cookbook 'apt'
 cookbook 'java', :git =>
-'https://github.com/opscode-cookbooks/java'
+'http://github.com/sw1nn/opscode-cookbooks-java'
 cookbook 'neo4j-server', :git =>
 'http://github.com/michaelklishin/neo4j-server-chef-cookbook'

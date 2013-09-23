@@ -16,9 +16,9 @@ GIT
       java (>= 0.0.1)
 
 GIT
-  remote: https://github.com/opscode-cookbooks/java
+  remote: http://github.com/sw1nn/opscode-cookbooks-java
   ref: master
-  sha: c6ef8a7d938edff1c8ac5c1af24026575d32af8c
+  sha: 8f20a9a342087f978a5c2d1eef0d008098e899c6
   specs:
     java (1.13.1)
       aws (>= 0.0.0)
