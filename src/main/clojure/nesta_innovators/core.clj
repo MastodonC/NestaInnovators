@@ -26,7 +26,7 @@
   (into {:source :github} (keep (fn [[k v]]
                                   (and v
                                        (when-not (.endsWith (name k) "url")
-                                         (list k (coerce v)))))
+                                         (vector k (coerce v)))))
                                 x)))
 
 (defn load-github [system]
