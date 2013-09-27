@@ -4,7 +4,10 @@
 
 (deftype OpenCorporatesSession []
   impl/Lifecycle
-  (start [this])
-  (stop [this]))
+  (start [this system]
+    (assoc system ::session this))
+  (stop [this system]
+    (dissoc system ::session this)))
 
-(defn mk-session [{config :opencorporates} & [options]])
+(defn mk-session [{config :opencorporates} & [options]]
+  (->OpenCorporatesSession))

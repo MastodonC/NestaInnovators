@@ -9,39 +9,34 @@
             )
   (:import [nesta_innovators.impl.protocols Lifecycle]))
 
-(def ^{:const true} USER_IDX_NAME "user")
-(def ^{:const true} ORGANIZATION_IDX_NAME "organization")
+(def ^{:const true} IDENTITY_IDX_NAME "login")
 
 (defrecord Neo4jStore [uri]
   Lifecycle
-  (start [this]
+  (start [this system]
     (nr/connect! uri)
-    (nn/create-index USER_IDX_NAME)
-    (nn/create-index ORGANIZATION_IDX_NAME))
-  (stop [this]))
+    (assoc system ::session this))
+  (stop [this system]
+    (dissoc system ::session this)))
 
 (defn mk-session [{config :neo4j}]
   (let [{:keys [uri]} config]
     (->Neo4jStore uri)))
 
-(defn add-user! [username attrs]
-  (log/infof "Adding User %s" username)
-  (nn/create-unique-in-index USER_IDX_NAME :user username (merge {:user username} attrs)))
+(defn add-identity! [{:keys [login] :as m}]
+  (log/infof "Adding Identity %s" login)
+  (nn/create m))
 
-(defn add-organization! [orgname attrs]
-  (log/infof "Adding Organization %s" orgname)
-  (nn/create-unique-in-index ORGANIZATION_IDX_NAME :org orgname (merge {:org orgname} attrs)))
-
-(defn link-user-and-organization! [user org])
+(defn add-identities! [coll]
+  (log/info "Adding a batch")
+  (nn/create-batch coll))
 
 (defn add-repo [repo attrs])
 
-(defn link-user-and-repo [user repo & [attrs]])
-
-(defn find-user-node [username]
-  (log/debug "find-user-node" username)
+(defn find-identity-node [login]
+  (log/debug "find-identity-node" login)
   ;; TODO query can be improved.
-  (nn/find-one USER_IDX_NAME "user" username))
+  (nn/find "login" login))
 
 ;; (deftype Neo4jPagedResponse [session resp]
 ;;   Page

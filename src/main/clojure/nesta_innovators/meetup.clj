@@ -27,8 +27,10 @@
 
 (deftype MeetupSession [key limiter options]
   impl/Lifecycle
-  (start [this])
-  (stop [this])
+  (start [this system]
+    (assoc system ::session this))
+  (stop [this system]
+    (dissoc system ::session this))
   impl/Enrichment
   (enrich [this m]
     (merge m

@@ -31,8 +31,10 @@
 
 (deftype GithubSession [oauth-token limiter options]
   Lifecycle
-  (start [this])
-  (stop [this])
+  (start [this system]
+    (assoc system ::session this))
+  (stop [this system]
+    (dissoc system ::session))
   Enrichment
   (enrich [this m]
     (map-deep-merge m

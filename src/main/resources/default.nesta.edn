@@ -1,5 +1,17 @@
 {
  :neo4j         {:uri "http://localhost:7474/db/data"}
+ :neo4j-batch   {:store-dir "/tmp/graph.db"
+                 :store-config
+                 {
+                  :cache_type, "weak",
+                  :neostore.nodestore.inserter.mapped_memory, "4096M",
+                  :neostore.relationshipstore.inserter.mapped_memory, "4096M",
+                  :neostore.propertystore.inserter.mapped_memory, "8192M",
+                  :neostore.propertystore.inserter.strings.mapped_memory, "0M",
+                  :neostore.propertystore.inserter.arrays.mapped_memory, "0M"
+                  }
+                  :indexes ['org.neo4j.index.lucene.unsafe.batchinsert.LuceneBatchInserterIndexProvider]
+                 }
  :github        {:auth            "41ae276c544a470c1d3696c986df4a0803ad8e86"
                  :rate-limit      [5000 :per-hour]
                  :max-connections 2}

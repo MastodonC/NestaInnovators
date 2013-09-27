@@ -21,13 +21,13 @@
   "Starts the current development system."
   []
   (alter-var-root #'system
-                  (fn [s] (impl/start (system/system)))))
+                  (fn [s] (impl/start (system/system) system))))
 
 (defn stop
   "Shuts down and destroys the current development system."
   []
   (alter-var-root #'system
-                  (fn [s] (when s (impl/stop system) s))))
+                  (fn [s] (when s (impl/stop system system) s))))
 
 (defn go
   "Initializes the current development system and starts it running."

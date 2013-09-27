@@ -30,17 +30,16 @@
   (enrich [this m]))
 
 (defprotocol Lifecycle
-  (init [this config])
-  (start [this])
-  (stop [this]))
+  (start [this system])
+  (stop [this system]))
 
 (extend-protocol Lifecycle
   nil
-  (start [this])
-  (stop [this])
+  (start [this system])
+  (stop [this system])
   Object
-  (start [this])
-  (stop [this]))
+  (start [this system])
+  (stop [this system]))
 
 (defn paged-get [page]
   (lazy-cat (data page)

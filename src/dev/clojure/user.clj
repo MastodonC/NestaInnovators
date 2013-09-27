@@ -2,3 +2,5 @@
 (defn dev []
   (require 'dev)
   (in-ns 'dev))
+
+(def go #'dev)
