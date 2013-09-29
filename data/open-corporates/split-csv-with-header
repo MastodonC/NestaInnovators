@@ -1,0 +1,26 @@
+#!/bin/sh
+
+filename=$1
+linecount=$2
+outputdir=$3
+
+filename_no_ext=${filename%.*}
+ext=${filename##*.}
+
+header_line=$(head -n 1 ${filename})
+
+mkdir -p $outputdir
+
+(
+cd $outputdir
+split --additional-suffix=.${ext}.tmp --numeric-suffixes=0 -l ${linecount} ../${filename} ${filename_no_ext}_
+
+for f in *.${ext}.tmp
+do
+    out=${f%.tmp}
+    echo ${header_line} > ${out}
+    cat ${f} >> ${out}
+    rm ${f}
+done
+)
+
