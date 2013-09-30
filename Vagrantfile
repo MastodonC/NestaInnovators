@@ -29,20 +29,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                              }
                            }
                          }
-                       },
-                       :neo4j => {
-                         :server => {
-                           :version => "2.0.0-M05",
-                           :tarball => {
-                             :url => "http://download.neo4j.org/artifact?edition=community&version=2.0.0-M05&distribution=tarball"
-                           },
-                           :node_auto_indexing => {
-                             :enabled => true,
-                             :keys_indexable => 'user,organization'
-                           }
-                         }
                        }
-                     })
+    })
     chef.add_recipe "apt"
     chef.add_recipe "java"
     chef.add_recipe "neo4j-server::tarball"

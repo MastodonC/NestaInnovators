@@ -30,7 +30,7 @@
   (start [this system]
     (assoc system ::session this))
   (stop [this system]
-    (dissoc system ::session this))
+    #spy/d (dissoc system ::session))
   impl/Enrichment
   (enrich [this m]
     (merge m

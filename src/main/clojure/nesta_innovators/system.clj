@@ -19,13 +19,13 @@
          (start stackexchange)
          (start opencorporates)
          (start meetup)))
-  (stop [_ system]
-    (->> system
-         (start meetup)
-         (start opencorporates)
-         (start stackexchange)
-         (start github)
-         (start neo4j))))
+  (stop [this system]
+    (map->NestaSystem (->> this
+                           (stop meetup)
+                           (stop opencorporates)
+                           (stop stackexchange)
+                           (stop github)
+                           (stop neo4j)))))
 
 (defn system []
   (let [config (config/load-config :prod)]

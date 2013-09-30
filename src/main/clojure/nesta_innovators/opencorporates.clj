@@ -7,7 +7,7 @@
   (start [this system]
     (assoc system ::session this))
   (stop [this system]
-    (dissoc system ::session this)))
+    (dissoc system ::session)))
 
 (defn mk-session [{config :opencorporates} & [options]]
   (->OpenCorporatesSession))

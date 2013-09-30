@@ -11,16 +11,19 @@ header_line=$(head -n 1 ${filename})
 
 mkdir -p $outputdir
 
-(
-cd $outputdir
-split --additional-suffix=.${ext}.tmp --numeric-suffixes=0 -l ${linecount} ../${filename} ${filename_no_ext}_
+split_cmd="split --additional-suffix=.${ext}.tmp --numeric-suffixes=0 --suffix-length=4 -l"
 
-for f in *.${ext}.tmp
-do
+
+(
+  cd $outputdir
+  $split_cmd ${linecount} ../${filename} ${filename_no_ext}_
+
+  for f in *.${ext}.tmp
+  do
     out=${f%.tmp}
     echo ${header_line} > ${out}
     cat ${f} >> ${out}
     rm ${f}
-done
+  done
 )
 

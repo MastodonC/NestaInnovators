@@ -108,6 +108,23 @@
      (oc-csv->maps header data enrich-fn)
      10000)))
 
+
+(defn load-stackoverflow-users-from-xml [system inf outf]
+  (let [header [:so-id :nesta-identity :age :up-votes :last-access-date :creation-date :down-votes :reputation :location :website-url :profile-image-url :about-me :views  :email-hash]
+        col-fn (apply juxt header)
+        data (map (comp col-fn enrich-stackoverflow :attrs)
+                  (:content (xml/parse (io/reader (bzip2-input-stream inf)))))]
+    (with-open [out (io/writer outf)]
+      (csv/write-csv out (cons (map name header) data) :separator \tab))))
+
+(defn csv->tsv [inf outf]
+  (with-open [in (io/reader inf)]
+    (let [[_ basename ext] (re-matches #"(.*)\.(\w+)" outf)
+          data (csv/read-csv in)]
+      (println "Writing batch to " outf)
+      (with-open [out (io/writer outf)]
+        (csv/write-csv out data :separator \tab)))))
+
 (defn load-oc-officers-from-csv [system f]
   (load-oc-from-csv system f enrich-oc-officer))
 
