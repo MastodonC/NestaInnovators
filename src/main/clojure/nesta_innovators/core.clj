@@ -108,7 +108,6 @@
      (oc-csv->maps header data enrich-fn)
      10000)))
 
-
 (defn load-stackoverflow-users-from-xml [system inf outf]
   (let [header [:so-id :nesta-identity :age :up-votes :last-access-date :creation-date :down-votes :reputation :location :website-url :profile-image-url :about-me :views  :email-hash]
         col-fn (apply juxt header)

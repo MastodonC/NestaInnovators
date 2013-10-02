@@ -18,6 +18,10 @@
                  [iota "1.1.1"]
                  [org.neo4j/neo4j "2.0.0-M05"]
                  [commons-io "1.3.2"]
+                 ;; [cascalog/cascalog-core "2.0.0-SNAPSHOT" :exclusions [[org.slf4j/slf4j-log4j12] [log4j]]]
+                 ;; [cascalog/cascalog-more-taps "2.0.0-SNAPSHOT"]
+                 [cascalog/cascalog-core "1.10.2" :exclusions [[org.slf4j/slf4j-log4j12] [log4j]]]
+                 [cascalog/cascalog-more-taps "1.10.2"]
                  ;; Logging
                  [org.clojure/tools.logging      "0.2.6"]
                  [ch.qos.logback/logback-classic "1.0.13"]
@@ -30,6 +34,7 @@
   :test-paths ["src/test/clojure"]
   :resource-paths ["src/main/resources"]
   :profiles {:dev {:source-paths ["src/dev/clojure" "src/main/clojure"]
-                   :dependencies [[org.clojure/tools.namespace "0.2.3"]]}
+                   :dependencies [[org.clojure/tools.namespace "0.2.3"]
+                                  [org.apache.hadoop/hadoop-core "1.1.2"]]}
              ;:uberjar {:main }
              })

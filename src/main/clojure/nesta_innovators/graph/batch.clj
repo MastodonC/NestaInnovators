@@ -62,7 +62,7 @@
       (when index?
         (doseq [ index indexes]
           (println (type index))
-          (.add  index inserter n m))))
+          (.add index inserter n m))))
     )
   (-create-relationship [this id1 id2 type m]
     (.createRelationship inserter id1 id2 type m)))
