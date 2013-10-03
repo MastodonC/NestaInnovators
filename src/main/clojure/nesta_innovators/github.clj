@@ -52,7 +52,10 @@
 
 (defn raw-api-call [session uri options]
   (log/debug "raw-api-call:" uri options)
-  (paged-get (paged-response session uri options)))
+  (let [resp (paged-response session uri options)]
+    (if (:not-paged? options)
+      resp
+      (paged-get resp))))
 
 (defn api-call [session uri-parts options]
   (raw-api-call session (->uri session uri-parts) options))

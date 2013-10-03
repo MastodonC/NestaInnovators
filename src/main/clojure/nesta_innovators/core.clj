@@ -34,6 +34,10 @@
                                        (when-not (.endsWith (name k) "url")
                                          (vector k (coerce v)))))
                                 x)))
+(defn remove-line-breaks [s]
+  (some-> s
+          (str/replace \" \')
+          (str/replace #"[^\w<>=/:']" " ")))
 
 (defn load-github [system]
   (let [session (:github system)
@@ -58,7 +62,9 @@
         (-> x
             keywordize
             (set/rename-keys {:display-name :nesta-identity
-                              :id :so-id}))))
+                              :id :so-id})
+            (update-in [:about-me] remove-line-breaks)
+            )))
 
 (defn load-github-users-from-dump [system file]
   (with-open [in (io/reader file)
@@ -112,7 +118,7 @@
   (let [header [:so-id :nesta-identity :age :up-votes :last-access-date :creation-date :down-votes :reputation :location :website-url :profile-image-url :about-me :views  :email-hash]
         col-fn (apply juxt header)
         data (map (comp col-fn enrich-stackoverflow :attrs)
-                  (:content (xml/parse (io/reader (bzip2-input-stream inf)))))]
+                  (:content (xml/parse (io/reader inf))))]
     (with-open [out (io/writer outf)]
       (csv/write-csv out (cons (map name header) data) :separator \tab))))
 
