@@ -7,7 +7,6 @@
             [clojure.string :as s]
             [clojure.java.io :as io]
             [clj-time.format :as tf]))
-      (:trap (hfs-textline "target/errors" :sinkmode :update))
 
 (defn parse-date [s]
   (when-let [dt (tf/parse s)]
@@ -64,7 +63,7 @@
 (defn stackoverflow-users [users trap]
   (<- [?so-id !nesta-identity !age !up-votes !last-access-date
        !creation-date !down-votes !reputation !location
-       !website-url !profile-image-url ?foo !views
+       !website-url !profile-image-url !views !about-me
        ]
       (users ?line)
       (split-line ?line 14 :#> 14
@@ -79,6 +78,7 @@
                     8 !location
                     9 !website-url
                    10 !profile-image-url
+                   11 !about-me
                    12 !views
                    13 !email-hash}
                   )
@@ -87,6 +87,33 @@
       ;; (remove-line-breaks !about-me-dirty :> !about-me)
       (identity "foo" :> ?foo)
       (:trap trap)))
+
+(defn stackoverflow-locations [users trap]
+  (<- [!location]
+      (users ?line)
+      (split-line ?line 14 :#> 14
+                  { 8 !location
+                   }
+                  )
+      ;; (parse-date !last-access-date-dirty :> !last-access-date)
+      ;; (parse-date !creation-date-dirty :> !creation-date)
+      ;; (remove-line-breaks !about-me-dirty :> !about-me)
+      (:distinct true)
+      (:trap trap)))
+
+(defn generate-company-officer-relations [company-in officer-in relations-out trap-base]
+  (?- (hfs-delimited relations-out :sinkmode :replace :compress? true)
+      (rels
+       (company (ops/fixed-sample (hfs-textline company-in :skip-header? true) 10000)
+                (hfs-delimited (str trap-base "/company")))
+       (officer (ops/fixed-sample (hfs-textline officer-in :skip-header? true) 20000)
+                (hfs-delimited (str trap-base "/officer")))
+       (hfs-delimited (str trap-base "/rels")))))
+
+(defn generate-stackoverflow-locations [users-in locations-out trap-base]
+  (?- (hfs-delimited locations-out :sinkmode :replace :compress? true)
+      (stackoverflow-locations (hfs-textline users-in)
+                               (hfs-delimited (str trap-base "/locations")))))
 
 #_(let [data-out "target/company"
         data-in "/tmp/company.tsv"
@@ -110,6 +137,13 @@
       (stackoverflow-users (hfs-textline data-in)
                            (hfs-delimited (str trap-base "/stackoverflow")))))
 
+#_(let [data-out "target/locations"
+        data-in "/tmp/Users.tsv"
+        trap-base "target/errors"]
+  (?- (hfs-delimited data-out :sinkmode :replace)
+      (stackoverflow-locations (hfs-textline data-in)
+                               (hfs-delimited (str trap-base "/locations")))))
+
 #_ (with-job-conf
      {"mapred.map.tasks" 8
       "mapred.child.java.opts" "-Xmx1024m"
@@ -117,12 +151,14 @@
       }
      (let [;; company-in "/home/neale/workspace/nesta-innovators/data/open-corporates/gb_company_export_2013-06-24.tsv"
            ;; officer-in "/home/neale/workspace/nesta-innovators/data/open-corporates/gb_officer_export_2013-06-24.tsv"
-           company-in "/tmp/company.tsv"
-           officer-in "/tmp/officer.tsv"
+           company-in "/home/neale/workspace/nesta-innovators/data/open-corporates/gb_company_export_2013-06-24.tsv"
+           officer-in "/home/neale/workspace/nesta-innovators/data/open-corporates/gb_officer_export_2013-06-24.tsv"
            data-out   "./target/rels"
-           err-out "./target/rels-errors"]
+           trap-base "target/errors"]
        (?- (hfs-delimited data-out :sinkmode :replace :write-header? true :compress? true)
            (rels
-            (company (ops/fixed-sample (hfs-textline company-in :skip-header? true) 10000))
-            (officer (hfs-textline officer-in :skip-header? true))
-            (hfs-delimited err-out :sinkmode :replace)))))
+            (company (ops/fixed-sample (hfs-textline company-in :skip-header? true) 10000)
+                     (hfs-delimited (str trap-base "/company")))
+            (officer (ops/fixed-sample (hfs-textline officer-in :skip-header? true) 20000)
+                     (hfs-delimited (str trap-base "/officer")))
+            (hfs-delimited (str trap-base "/rels"))))))

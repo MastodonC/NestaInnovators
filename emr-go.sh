@@ -16,13 +16,12 @@ case $cmd in
             echo "must supply bid price"
             exit;
          fi
-          read -p "Start with bid price of $${bid_price} [YN]: " yn
+          read -p "Start with bid price of \$${bid_price}? [YN]: " yn
           case $yn in
-            [Yy]*) break;;
+            [Yy]*) ;;
             *) exit;
           esac
-          response=\
-          $($EMR \
+          response=$($EMR \
             --create --name nesta \
             --debug \
             --log-uri s3://mc-innovators-log \
@@ -40,10 +39,10 @@ case $cmd in
           jar=$1; shift
           args=$(printf -- "--args %s " "$@")
           if [ -z "${EMR_JOB_FLOW}" ]; then
-              read -p "Enter Job Flow Id:" EMR_JOB_FLOW
+              read -p "Enter Job Flow Id: " EMR_JOB_FLOW
           fi
           echo "Add jar ${jar} with args ${args}"
-          read -p "to job flow ${EMR_JOB_FLOW} [YN]: " yn
+          read -p "to job flow ${EMR_JOB_FLOW} ? [YN]: " yn
           case $yn in
             [Yy]*);;
             *) exit;
@@ -57,7 +56,9 @@ case $cmd in
             ${args}
         ;;
      stop)
-          jar=$1; shift
+          if [ -z "${EMR_JOB_FLOW}" ]; then
+              read -p "Enter Job Flow Id: " EMR_JOB_FLOW
+          fi
           $EMR \
             --jobflow ${EMR_JOB_FLOW} \
             --terminate

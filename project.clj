@@ -28,13 +28,13 @@
                  [org.slf4j/jul-to-slf4j         ~slf4j-version]
                  [org.slf4j/jcl-over-slf4j       ~slf4j-version]
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
+                 [org.apache.hadoop/hadoop-core "1.1.2" :scope "provided"]
                  ]
   :java-source-paths ["src/main/java"]
   :source-paths ["src/main/clojure"]
   :test-paths ["src/test/clojure"]
   :resource-paths ["src/main/resources"]
   :profiles {:dev {:source-paths ["src/dev/clojure" "src/main/clojure"]
-                   :dependencies [[org.clojure/tools.namespace "0.2.3"]
-                                  [org.apache.hadoop/hadoop-core "1.1.2"]]}
-             ;:uberjar {:main }
+                   :dependencies [[org.clojure/tools.namespace "0.2.3"]]}
+             :uberjar {:main nesta-innovators.main}
              })
