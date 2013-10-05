@@ -36,5 +36,6 @@
   :resource-paths ["src/main/resources"]
   :profiles {:dev {:source-paths ["src/dev/clojure" "src/main/clojure"]
                    :dependencies [[org.clojure/tools.namespace "0.2.3"]]}
-             :uberjar {:main nesta-innovators.main}
+             :uberjar {:aot [nesta-innovators.main]
+                       :main nesta-innovators.main}
              })
