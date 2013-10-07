@@ -16,6 +16,9 @@
 
 (def ^{:const true} BASE_API_URI "https://api.github.com/")
 
+(defn- with-headers-as-meta [obj {:strs [etag last-modified]}]
+  (with-meta obj {:etag etag :last-modified last-modified}))
+
 (deftype GithubPagedResponse [session resp]
   Page
   (next-page [this]
@@ -25,9 +28,10 @@
     (get-in resp [:links :next :href]))
   (data [this]
     (when-let [data (:body resp)]
-      (if (sequential? data)
-        data
-        (list data)))))
+      (map #(with-headers-as-meta % (:headers resp))
+           (if (sequential? data)
+             data
+             (list data))))))
 
 (deftype GithubSession [oauth-token limiter options]
   Lifecycle
@@ -111,6 +115,4 @@
     (doseq [p (all-persons session)]
       (.write out (pr-str p))
       (.write out \newline)))
-
-
   )

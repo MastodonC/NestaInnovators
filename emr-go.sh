@@ -1,13 +1,13 @@
 #!/bin/bash
 
-EMR="elastic-mapreduce -c ${HOME}/.config/elastic-mapreduce/credentials.json"
+EMR="/usr/local/elastic-mapreduce/elastic-mapreduce -c ${HOME}/.config/elastic-mapreduce/credentials.json"
 
 cmd=$1; shift;
 
 case $cmd in
     ubers3)
          lein clean
-         lein with-profile uberjar uberjar
+         lein uberjar
          aws --profile mastodonc s3 cp target/nesta-innovators-0.1.0-SNAPSHOT-standalone.jar s3://mc-deployments/nesta.jar
         ;;
     start)
@@ -25,14 +25,21 @@ case $cmd in
             --create --name nesta \
             --debug \
             --log-uri s3://mc-innovators-log \
-            --num-instances 2 \
+            --instance-group master \
+            --instance-count 1 \
+            --bid-price $bid_price \
+            --instance-type m1.xlarge \
+            --instance-group core \
+            --instance-count 1 \
+            --bid-price $bid_price \
             --instance-type m1.xlarge \
             --add-instance-group task \
             --bid-price $bid_price \
             --instance-type m1.xlarge \
             --instance-count 2 \
             --alive)
-          EMR_JOB_FLOW=${response#Create job flow }
+          echo $response
+          export EMR_JOB_FLOW=${response#Create job flow }
         ;;
      add-jar-step)
           name=$1; shift

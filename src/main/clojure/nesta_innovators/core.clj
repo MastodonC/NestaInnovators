@@ -11,7 +11,8 @@
             [clojure.java.io :as io]
             [cheshire.core :as json]
             [clojure.edn :as edn]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [kixipipe.storage.s3 :as s3])
   (:import [org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream]))
 
 (def FORMATTER (:ordinal-date-time-no-ms tf/formatters))
@@ -29,11 +30,13 @@
            str))
 
 (defn enrich-github [x]
-  (into {:nesta-source :github} (keep (fn [[k v]]
-                                  (and v
-                                       (when-not (.endsWith (name k) "url")
-                                         (vector k (coerce v)))))
-                                x)))
+  (into (merge {:nesta-source :github} (meta x))
+        (keep (fn [[k v]]
+                (and v
+                     (when-not (.endsWith (name k) "url")
+                       (vector k (coerce v)))))
+              x)))
+
 (defn remove-line-breaks [s]
   (some-> s
           (str/replace \" \')
@@ -52,6 +55,24 @@
             followers          (take 100 (gh/followers session login))]
         (doseq [follower followers]
           (g/follows! (g/find-identity-node (:login follower)) followee))))))
+
+(defn dump-batch-to-s3-csv [system n items]
+  (let [key (format "github-users-%06d.tsv" n)
+        f   (str "/Media/Downloads/data/" key)]
+    (with-open [out (io/writer f)]
+      (csv/write-csv out (map enrich-github items)
+                     :separator \tab
+                     :header (map name (keys (first items)))))
+    (s3/store-file system {:src-name  "github"
+                           :feed-name "users"
+                           :metadata {:part n}
+                           :filename f})))
+
+(defn load-github [system]
+  (let [batches (partition 100000 (gh/all-persons system))
+        n (atom 0)]
+    (doseq [batch batches]
+      (dump-batch-to-s3-csv system (swap! atom inc)))))
 
 (defn keywordize [m]
   (letfn [(mapper [[k v]] [(->kebab-case-keyword k) (if (map? v) (keywordize v) (coerce v))])]

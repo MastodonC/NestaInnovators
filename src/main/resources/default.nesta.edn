@@ -22,4 +22,7 @@
                  :rate-limit      [300 :per-hour] ; estimated
                  :max-connections 2}
  :http-client   {:max-connections 10}
+ :s3            {:access-key "AKIAIAIUNEGCG2OEMTKQ"
+                 :secret-key "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"
+                 :file-bucket "mc-innovators"}
  }
