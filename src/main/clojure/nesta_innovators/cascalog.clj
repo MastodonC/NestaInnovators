@@ -125,13 +125,8 @@
 
 (defn officer-locations [officers-in trap]
   (<- [!location ?count]
-<<<<<<< Updated upstream
       (officer (hfs-textline officers-in :skip-header? true)
                trap :#> 11 {10 !address})
-=======
-       (officer (hfs-textline officers-in :skip-header? true)
-                trap :#> 11 {10 !address})
->>>>>>> Stashed changes
       (map-location !address :> !location)
       (ops/!count !location :> ?count)
       (:trap trap)))
@@ -164,11 +159,15 @@
       (stackoverflow-locations (hfs-textline users-in)
                                (hfs-delimited (str trap-base "/so-locations")))))
 
+(defn generate-stackoverflow-urls [users-in locations-out trap-base]
+  (?- (hfs-delimited locations-out :sinkmode :replace :compress? true)
+      (stackoverflow-locations (hfs-textline users-in)
+                               (hfs-delimited (str trap-base "/so-locations")))))
+
 (defn generate-officer-locations [officer-in locations-out trap-base]
   (?- (hfs-delimited locations-out :sinkmode :replace :compress? true)
       (officer-locations (hfs-textline officer-in :skip-header? true)
                          (hfs-delimited (str trap-base "/oc-locations")))))
-
 (defn generate-stackoverflow-about-me-match [users-in urls-out trap-base]
   (?- (hfs-delimited urls-out :sinkmode :replace :compress? false)
       (stackoverflow-about-me-match (hfs-textline users-in)
