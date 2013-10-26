@@ -29,12 +29,18 @@
            parse-date
            str))
 
+(defn boolean? [x] (instance? java.lang.Boolean x))
+
 (defn enrich-github [x]
-  (into (merge {:nesta-source :github} (meta x))
+  (into (merge {:src-name "github"}
+               (meta x))
         (keep (fn [[k v]]
-                (and v
-                     (when-not (.endsWith (name k) "url")
-                       (vector k (coerce v)))))
+                ;; keep 'keeps' boolean values of false, special processing required.
+                (if (boolean? v)
+                  (vector k (str v))
+                  (and v
+                       (when-not (.endsWith (name k) "url")
+                         (vector k (coerce v))))))
               x)))
 
 (defn remove-line-breaks [s]
@@ -42,9 +48,9 @@
           (str/replace \" \')
           (str/replace #"[^\w<>=/:']" " ")))
 
-(defn load-github [system]
+(defn load-github-to-neo4j [system]
   (let [session (:github system)
-        items (take 10000 (gh/all-persons session))]
+        items (take 1000 (gh/all-persons session))]
     (doseq [item items]
       (let [{:keys [login]} item
             item (enrich-github item)]
@@ -57,22 +63,31 @@
           (g/follows! (g/find-identity-node (:login follower)) followee))))))
 
 (defn dump-batch-to-s3-csv [system n items]
-  (let [key (format "github-users-%06d.tsv" n)
-        f   (str "/home/neale/Downloads" key)]
+  (let [key    (format "github-users-%06d.tsv" n)
+        dir    "/tmp"
+        items  (map #(->> % :login (gh/person-details system) enrich-github) items)
+        keys   (keys (enrich-github (first items)))
+        ->vals (apply juxt keys)
+        f      (io/file dir key)]
+
     (with-open [out (io/writer f)]
-      (csv/write-csv out (map enrich-github items)
-                     :separator \tab
-                     :header (map name (keys (first items)))))
+      (csv/write-csv out [(vec (map name keys))] :separator \tab)
+      (csv/write-csv out (map ->vals items)
+                     :separator \tab))
     (s3/store-file system {:src-name  "github"
                            :feed-name "users"
                            :metadata {:part n}
-                           :filename f})))
+                           :dir dir
+                           :filename key})
+    (.delete f)))
 
 (defn load-github [system]
-  (let [batches (partition 100000 (gh/all-persons system))
+  (let [batches (partition 1000 (gh/all-persons system))
         n (atom 0)]
     (doseq [batch batches]
-      (dump-batch-to-s3-csv system (swap! atom inc)))))
+      (println "dumping batch " @n)
+      (dump-batch-to-s3-csv system (swap! n inc) batch)
+      (println "dumped batch"))))
 
 (defn keywordize [m]
   (letfn [(mapper [[k v]] [(->kebab-case-keyword k) (if (map? v) (keywordize v) (coerce v))])]
@@ -84,8 +99,7 @@
             keywordize
             (set/rename-keys {:display-name :nesta-identity
                               :id :so-id})
-            (update-in [:about-me] remove-line-breaks)
-            )))
+            (update-in [:about-me] remove-line-breaks))))
 
 (defn load-github-users-from-dump [system file]
   (with-open [in (io/reader file)

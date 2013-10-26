@@ -29,18 +29,6 @@
 (defprotocol Enrichment
   (enrich [this m]))
 
-(defprotocol Lifecycle
-  (start [this system])
-  (stop [this system]))
-
-(extend-protocol Lifecycle
-  nil
-  (start [this system])
-  (stop [this system])
-  Object
-  (start [this system])
-  (stop [this system]))
-
 (defn paged-get [page]
   (lazy-cat (data page)
             (when (next? page)

@@ -1,6 +1,6 @@
 (ns nesta-innovators.graph
   "Store a graph"
-  (:require [kixipipe.protocols :refer [start stop] :as impl]
+  (:require [kixipipe.protocols :as kixi]
             [clojurewerkz.neocons.rest :as nr]
             [clojurewerkz.neocons.rest.nodes :as nn]
             [clojurewerkz.neocons.rest.relationships :as nrl]

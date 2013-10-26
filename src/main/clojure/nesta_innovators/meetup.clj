@@ -1,11 +1,20 @@
 (ns nesta-innovators.meetup
   "Short package description."
+<<<<<<< HEAD
   (:require [kixipipe.ratelimit               :as limit]
             [nesta-innovators.impl.protocols  :as impl :refer [next-page next? data ->uri paged-response enrich paged-get]]
             [clojure.string                   :as str]
             [org.httpkit.client               :as http]
             [ring.util.codec                  :refer [form-decode]]
             [com.stuartsierra.component       :as component]
+=======
+  (:require [kixipipe.ratelimit              :as limit]
+            [kixipipe.protocols              :as kixi]
+            [nesta-innovators.impl.protocols :as impl :refer [next-page next? data ->uri paged-response enrich paged-get]]
+            [clojure.string                  :as str]
+            [org.httpkit.client              :as http]
+            [ring.util.codec  :refer [form-decode]]
+>>>>>>> snapshot.
             [schema.core :as s]))
 
 (def BASE_API_URI "http://api.meetup.com/")

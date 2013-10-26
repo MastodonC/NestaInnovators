@@ -7,6 +7,7 @@
             [kixipipe.ratelimit :as limit]
             [kixipipe.data.merge :refer [map-deep-merge]]
             [kixipipe.ratelimit :refer [take-token]]
+            [kixipipe.protocols :refer [start stop]]
             [nesta-innovators.impl.protocols :refer [->uri
                                                      enrich
                                                      next?
@@ -57,50 +58,56 @@
   (->uri [this parts]
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
-(defn raw-api-call [session uri options]
+(defn- raw-api-call* [session uri options]
   (log/debug "raw-api-call:" uri options)
   (let [resp (paged-response session uri options)]
     (if (:not-paged? options)
       resp
       (paged-get resp))))
 
-(defn api-call [session uri-parts options]
-  (raw-api-call session (->uri session uri-parts) options))
+(defn- api-call* [session uri-parts options]
+  (raw-api-call* session (->uri session uri-parts) options))
 
-(defn all-persons [session & [options]]
-  (api-call session ["users"] options))
+(defn raw-api-call [{session ::session} uri options]
+  (raw-api-call* session uri options))
 
-(defn all-organizations [session & [options]]
-  (api-call session ["orgs"] options))
+(defn api-call [{session ::session} uri-parts options]
+  (api-call* session uri-parts options))
 
-(defn person-details [session user & [options]]
-  (api-call session ["users" user] options))
+(defn all-persons [{session ::session} & [options]]
+  (api-call* session ["users"] options))
 
-(defn events [session user & [options]]
-  (api-call session ["users" user "events"] options))
+(defn all-organizations [{session ::session} & [options]]
+  (api-call* session ["orgs"] options))
 
-(defn orgs [session user & [options]]
-  (api-call session ["users" user "orgs"] options))
+(defn person-details [{session ::session} user & [options]]
+  (first (api-call* session ["users" user] options)))
 
-(defn org-details [session org & [options]]
-  (api-call session ["orgs" org] options))
+(defn events [{session ::session} user & [options]]
+  (api-call* session ["users" user "events"] options))
 
-(defn org-members [session org & [options]]
-  (api-call session ["orgs" org "members"] options))
+(defn orgs [{session ::session} user & [options]]
+  (api-call* session ["users" user "orgs"] options))
 
-(defn repos [session user & [options]]
-  (api-call session ["users" user "repos"] options))
+(defn org-details [{session ::session} org & [options]]
+  (api-call* session ["orgs" org] options))
 
-(defn followers [session user & [options]]
-  (api-call session ["users" user "followers"] options))
+(defn org-members [{session ::session} org & [options]]
+  (api-call* session ["orgs" org "members"] options))
 
-(defn following [session user & [options]]
-  (api-call session ["users" user "following"] options))
+(defn repos [{session ::session} user & [options]]
+  (api-call* session ["users" user "repos"] options))
 
-(def ^:private Config {:auth s/String
+(defn followers [{session ::session} user & [options]]
+  (api-call* session ["users" user "followers"] options))
+
+(defn following [{session ::session} user & [options]]
+  (api-call* session ["users" user "following"] options))
+
+(def ^:private Config {:auth String
                        :rate-limit (s/pair s/Int "limit"
                                            (s/either s/Int s/Keyword) "period")
-                       (s/optional-key :max-connections) s/Number})
+                       (s/optional-key :max-connections) Number})
 
 (defn new-github [config & [options]]
   (s/validate Config config)

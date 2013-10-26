@@ -8,12 +8,13 @@
             [clojure.data.csv :as csv]
             [clojure.java.io :as io]
             [clojure.walk :as walk]
+            [kixipipe.protocols :as kixi]
+            [schema.core :as s]
             )
   (:import [org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream]
            [org.neo4j.unsafe.batchinsert BatchInserter BatchInserter BatchInserterIndex BatchInserterIndexProvider BatchInserters]
            [org.neo4j.index.lucene.unsafe.batchinsert LuceneBatchInserterIndexProvider]
            [org.neo4j.graphdb Label DynamicLabel]
-           [nesta_innovators.impl.protocols Lifecycle]
            [nesta_innovators.graph NestaLabels]
            ))
 
@@ -44,10 +45,11 @@
   (-create-relationship [this id1 id2 type m]))
 
 (deftype Neo4jBatchInserter [^BatchInserter inserter indexes]
-  Lifecycle
-  (start [this system]
+  kixi/Lifecycle
+  (kixi/init [this system])
+  (kixi/start [this system]
     (assoc system ::session this))
-  (stop [this system]
+  (kixi/stop [this system]
     (doseq [index indexes]
       (.shutdown ^BatchInserterIndexProvider index))
     (.shutdown inserter)
@@ -86,7 +88,10 @@
 (defn create-relationship [session id1 id2 type m]
   (-create-relationship session id1 id2 type m))
 
-(defn mk-session [{config :neo4j-batch}]
+(def ^:private Config
+
+  )
+(defn mk-session [{{config :neo4j-batch} :kixipipe/config}]
   (let [{:keys [store-dir store-config]} config]
       (org.apache.commons.io.FileUtils/cleanDirectory (io/as-file store-dir))
       (let [inserter (inserter store-dir store-config)

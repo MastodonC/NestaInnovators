@@ -1,6 +1,9 @@
 (ns nesta-innovators.main
   "Main class for nesta"
-  (:require [nesta-innovators.cascalog])
+  (:require [nesta-innovators.cascalog]
+            [nesta-innovators.system]
+            [nesta-innovators.core :as c]
+            [kixipipe.protocols :as kixi])
   (:gen-class))
 
 (defn- invoke-command* [f s3-base args]
@@ -17,6 +20,10 @@
 (defcommand stackoverflow-locations)
 (defcommand officer-locations)
 (defcommand officer-counts)
+
+(defmethod invoke-command "load-github-to-s3" [[f & args]]
+  (let [system (nesta-innovators.system/system)]
+   (c/load-github (kixi/start system system))))
 
 (defn -main [ & args]
   (invoke-command args))
