@@ -3,6 +3,7 @@
   (:require [org.httpkit.client :as http]
             [clojure.string :as str]
             [kixipipe.ratelimit :as limit]
+            [schema.core :as s]
             [nesta-innovators.impl.protocols :refer [->uri
                                                      paged-get
                                                      paged-response] :as impl]
@@ -48,8 +49,13 @@
   (->uri [this parts]
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
+(def ^:private Config {:auth s/String
+                       :rate-limit (s/pair s/Int "limit"
+                                           (s/either s/Int s/Keyword) "period")
+                       (s/optional-key :max-connections) s/Number})
 
 (defn new-stackexchange [config & [options]]
+  (s/validate Config config)
   (let [{:keys [auth rate-limit]} config
         [limit period] rate-limit]
     (->StackExchangeSession auth (limit/rate-limiter limit period) options)))

@@ -19,7 +19,7 @@
  :stackexchange {:auth            "rMMlVB4zqkoQB4SQ3anw1w"
                  :rate-limit      [300 :per-hour]
                  :max-connections 2}
- :meetup        {:auth            {:auth "543fa67477751e50693c66658564c"}
+ :meetup        {:auth            "543fa67477751e50693c66658564c"
                  :rate-limit      [300 :per-hour] ; estimated
                  :max-connections 2}
  :http-client   {:max-connections 10}

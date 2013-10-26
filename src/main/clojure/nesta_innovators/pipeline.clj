@@ -20,11 +20,10 @@
 (defrecord HttpRequestComponent []
   Http
   (GET [this uri result-chan]
-    (http/get uri)
+    (http/get uri )
     )
   )
-
-(defn pipeline []
+(defn pipeline [system]
   (let [work (chan)]
     ()
     )

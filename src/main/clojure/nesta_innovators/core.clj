@@ -58,7 +58,7 @@
 
 (defn dump-batch-to-s3-csv [system n items]
   (let [key (format "github-users-%06d.tsv" n)
-        f   (str "/Media/Downloads/data/" key)]
+        f   (str "/home/neale/Downloads" key)]
     (with-open [out (io/writer f)]
       (csv/write-csv out (map enrich-github items)
                      :separator \tab

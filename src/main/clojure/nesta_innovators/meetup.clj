@@ -3,9 +3,10 @@
   (:require [kixipipe.ratelimit               :as limit]
             [nesta-innovators.impl.protocols  :as impl :refer [next-page next? data ->uri paged-response enrich paged-get]]
             [clojure.string                   :as str]
-          (g)  [org.httpkit.client               :as http]
+            [org.httpkit.client               :as http]
             [ring.util.codec                  :refer [form-decode]]
-            [com.stuartsierra.component       :as component]))
+            [com.stuartsierra.component       :as component]
+            [schema.core :as s]))
 
 (def BASE_API_URI "http://api.meetup.com/")
 
@@ -47,7 +48,13 @@
   (->uri [this parts]
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
+(def ^:private Config {:auth s/String
+                       :rate-limit (s/pair s/Int "limit"
+                                           (s/either s/Int s/Keyword) "period")
+                       (s/optional-key :max-connections) s/Number})
+
 (defn new-meetup [config & [options]]
+  (s/validate Config config)
   (let [{:keys [auth rate-limit]} config
         [limit period] rate-limit]
     (->MeetupSession auth (limit/rate-limiter limit period) options)))

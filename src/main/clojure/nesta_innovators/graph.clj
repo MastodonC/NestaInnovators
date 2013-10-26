@@ -1,13 +1,13 @@
 (ns nesta-innovators.graph
   "Store a graph"
-  (:require [clojurewerkz.neocons.rest :as nr]
+  (:require [kixipipe.protocols :refer [start stop] :as impl]
+            [clojurewerkz.neocons.rest :as nr]
             [clojurewerkz.neocons.rest.nodes :as nn]
             [clojurewerkz.neocons.rest.relationships :as nrl]
             [clojurewerkz.neocons.rest.cypher :as cy]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
             [com.stuartsierra.component :as component])
-  (:import [nesta_innovators.impl.protocols Lifecycle]))
 
 (def ^{:const true} IDENTITY_IDX_NAME "login")
 

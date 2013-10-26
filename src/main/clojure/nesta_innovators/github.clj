@@ -12,8 +12,8 @@
                                                      next?
                                                      paged-get
                                                      paged-response]]
-            [com.stuartsierra.component :as component])
-  (:import [nesta_innovators.impl.protocols Paged Page Enrichment ToUri]))
+            [com.stuartsierra.component :as component]
+            [schema.core :as s])
 
 (def ^{:const true} BASE_API_URI "https://api.github.com/")
 
@@ -45,8 +45,8 @@
   Enrichment
   (enrich [this m]
     (map-deep-merge m
-           {:headers {"Authorization" (str "token " oauth-token)}}
-           (select-keys options [:debug :debug-body])))
+                    {:headers {"Authorization" (str "token " oauth-token)}}
+                    (select-keys options [:debug :debug-body])))
   Paged
   (paged-response [this uri query-params]
     (take-token limiter)
@@ -97,7 +97,13 @@
 (defn following [session user & [options]]
   (api-call session ["users" user "following"] options))
 
+(def ^:private Config {:auth s/String
+                       :rate-limit (s/pair s/Int "limit"
+                                           (s/either s/Int s/Keyword) "period")
+                       (s/optional-key :max-connections) s/Number})
+
 (defn new-github [config & [options]]
+  (s/validate Config config)
   (let [{oauth-token :auth} config
         [limit period]      (:rate-limit config)
         limiter             (limit/rate-limiter limit period)]
