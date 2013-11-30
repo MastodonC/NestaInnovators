@@ -1,4 +1,4 @@
-(ns nesta-innovators.graph
+(ns nesta-innovators.neo4j
   "Store a graph"
   (:require [clojurewerkz.neocons.rest :as nr]
             [clojurewerkz.neocons.rest.nodes :as nn]
@@ -6,19 +6,21 @@
             [clojurewerkz.neocons.rest.cypher :as cy]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
-            [com.stuartsierra.component :as component])
-  (:import [nesta_innovators.impl.protocols Lifecycle]))
+            [com.stuartsierra.component :as component]))
 
 (def ^{:const true} IDENTITY_IDX_NAME "login")
 
 (defrecord Neo4jStore [uri]
   component/Lifecycle
   (start [this]
-    (nr/connect! uri)
-    this)
-  (stop [this] this))
+    (println "Starting Neo4j on " uri)
+    (assoc this :endpoint (nr/connect uri)))
+  (stop [this] 
+    (println "Stopping Neo4j on " uri)
+    (dissoc this :endpoint)
+    this))
 
-(defn new-neo4j [{config :neo4j}]
+(defn new-neo4j [config]
   (let [{:keys [uri]} config]
     (->Neo4jStore uri)))
 

@@ -1,11 +1,11 @@
 (ns nesta-innovators.meetup
   "Short package description."
-  (:require [kixipipe.ratelimit              :as limit]
-            [nesta-innovators.impl.protocols :as impl :refer [next-page next? data ->uri paged-response enrich paged-get]]
-            [clojure.string                  :as str]
-            [org.httpkit.client              :as http]
-            [ring.util.codec  :refer [form-decode]]
-            ))
+  (:require [kixipipe.ratelimit               :as limit]
+            [nesta-innovators.impl.protocols  :as impl :refer [next-page next? data ->uri paged-response enrich paged-get]]
+            [clojure.string                   :as str]
+          (g)  [org.httpkit.client               :as http]
+            [ring.util.codec                  :refer [form-decode]]
+            [com.stuartsierra.component       :as component]))
 
 (def BASE_API_URI "http://api.meetup.com/")
 
@@ -25,19 +25,20 @@
   (data [this]
     (get-in resp [:body :results])))
 
-(deftype MeetupSession [key limiter options]
-  impl/Lifecycle
-  (start [this system]
-    (assoc system ::session this))
-  (stop [this system]
-    #spy/d (dissoc system ::session))
+(defrecord MeetupSession [key limiter options]
+  component/Lifecycle
+  (start [this] 
+    (println "Starting Meetup Component.")
+    this)
+  (stop [this] 
+    (println "Stopping Meetup Component.")
+    this)
   impl/Enrichment
   (enrich [this m]
     (merge m
            (select-keys options [:debug :debug-body] )))
   impl/Paged
   (paged-response [this uri query-params]
-    (println "uri:" uri)
     (->MeetupPagedResponse this uri {}
                            (http/get uri  (->> {:as :json
                                                 :query-params (assoc-in query-params [:key] key)}
@@ -46,7 +47,7 @@
   (->uri [this parts]
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
-(defn mk-session [{config :meetup} & [options]]
+(defn new-meetup [config & [options]]
   (let [{:keys [auth rate-limit]} config
         [limit period] rate-limit]
     (->MeetupSession auth (limit/rate-limiter limit period) options)))

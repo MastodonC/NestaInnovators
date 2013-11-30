@@ -1,33 +1,25 @@
 (ns dev
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [clojure.pprint :refer [pprint]]
-            [clojure.repl :refer :all]
-            [clojure.test :as test]
-            [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+  (:require [clojure.tools.namespace.repl :refer [refresh refresh-all]]
             [nesta-innovators.system :as system]
-            [nesta-innovators.impl.protocols :as impl]
-            ))
-
-(def system nil)
+            [kixipipe.application :as kixi]
+            [com.stuartsierra.component :as component]))
 
 (defn init
   "Constructs the current development system."
   []
-  (alter-var-root #'system
+  (alter-var-root #'kixi/system
     (constantly (system/system))))
 
 (defn start
   "Starts the current development system."
   []
-  (alter-var-root #'system
-                  (fn [s] (impl/start (system/system) system))))
+  (alter-var-root #'kixi/system component/start))
 
 (defn stop
   "Shuts down and destroys the current development system."
   []
-  (alter-var-root #'system
-                  (fn [s] (when s (impl/stop system system) s))))
+  (alter-var-root #'kixi/system
+                  (fn [s] (when s (component/stop s)))))
 
 (defn go
   "Initializes the current development system and starts it running."

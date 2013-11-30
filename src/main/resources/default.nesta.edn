@@ -1,4 +1,5 @@
 {
+ :kixipipe/defaults {:download-dir "/tmp"}
  :neo4j         {:uri "http://localhost:7474/db/data"}
  :neo4j-batch   {:store-dir "/tmp/graph.db"
                  :store-config
@@ -24,5 +25,6 @@
  :http-client   {:max-connections 10}
  :s3            {:access-key "AKIAIAIUNEGCG2OEMTKQ"
                  :secret-key "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"
-                 :file-bucket "mc-innovators"}
+                 :file-bucket "mc-innovators"
+                 }
  }

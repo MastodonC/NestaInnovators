@@ -3,10 +3,10 @@
   (:require [org.httpkit.client :as http]
             [clojure.string :as str]
             [kixipipe.ratelimit :as limit]
-            [nesta-innovators.impl.protocols :as impl]
             [nesta-innovators.impl.protocols :refer [->uri
                                                      paged-get
-                                                     paged-response]]))
+                                                     paged-response] :as impl]
+            [com.stuartsierra.component :as component]))
 
 (def KNOWN_SITES {:stackoverflow "stackoverflow.com"
                   :electronics "electronics.stackexchange.com"})
@@ -25,12 +25,14 @@
   (data [this]
     (get-in resp [:body :items])))
 
-(deftype StackExchangeSession [oauth-token limiter options]
-  impl/Lifecycle
-  (start [this system]
-    (assoc system ::session this))
-  (stop [this system]
-    #spy/d (dissoc system ::session))
+(defrecord StackExchangeSession [oauth-token limiter options]
+  component/Lifecycle
+  (start [this] 
+    (println "Starting StackExchange Session.") 
+    this)
+  (stop [this] 
+    (println "Stopping StackExchange Session.")
+    this)
   impl/Enrichment
   (enrich [this m]
     (merge m
@@ -47,7 +49,7 @@
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
 
-(defn mk-session [{config :stackexchange} & [options]]
+(defn new-stackexchange [config & [options]]
   (let [{:keys [auth rate-limit]} config
         [limit period] rate-limit]
     (->StackExchangeSession auth (limit/rate-limiter limit period) options)))

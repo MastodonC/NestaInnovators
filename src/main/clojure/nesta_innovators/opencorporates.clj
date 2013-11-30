@@ -1,13 +1,15 @@
 (ns nesta-innovators.opencorporates
   "Short package description."
-  (:require [nesta-innovators.impl.protocols :as impl]))
+  (:require [com.stuartsierra.component :as component]))
 
-(deftype OpenCorporatesSession []
-  impl/Lifecycle
-  (start [this system]
-    (assoc system ::session this))
-  (stop [this system]
-    (dissoc system ::session)))
+(defrecord OpenCorporatesSession []
+  component/Lifecycle
+  (start [this] 
+    (println "Starting Open Corporates Component.")
+    this)
+  (stop [this] 
+    (println "Stopping Open Corporates Component.")
+    this))
 
-(defn mk-session [{config :opencorporates} & [options]]
+(defn new-open-corporates [config  & [options]]
   (->OpenCorporatesSession))

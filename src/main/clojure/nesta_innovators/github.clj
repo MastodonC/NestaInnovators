@@ -11,8 +11,9 @@
                                                      enrich
                                                      next?
                                                      paged-get
-                                                     paged-response]])
-  (:import [nesta_innovators.impl.protocols Paged Page Lifecycle Enrichment ToUri]))
+                                                     paged-response]]
+            [com.stuartsierra.component :as component])
+  (:import [nesta_innovators.impl.protocols Paged Page Enrichment ToUri]))
 
 (def ^{:const true} BASE_API_URI "https://api.github.com/")
 
@@ -33,12 +34,14 @@
              data
              (list data))))))
 
-(deftype GithubSession [oauth-token limiter options]
-  Lifecycle
-  (start [this system]
-    (assoc system ::session this))
-  (stop [this system]
-    (dissoc system ::session))
+(defrecord GithubSession [oauth-token limiter options]
+  component/Lifecycle
+  (start [this] 
+    (println "Starting Github Component") 
+    this)
+  (stop [this] 
+    (println "Starting Github Component")
+    this)
   Enrichment
   (enrich [this m]
     (map-deep-merge m
@@ -94,7 +97,7 @@
 (defn following [session user & [options]]
   (api-call session ["users" user "following"] options))
 
-(defn mk-session [{config :github} & [options]]
+(defn new-github [config & [options]]
   (let [{oauth-token :auth} config
         [limit period]      (:rate-limit config)
         limiter             (limit/rate-limiter limit period)]
