@@ -7,7 +7,7 @@
             [clojurewerkz.neocons.rest.cypher :as cy]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
-            [com.stuartsierra.component :as component])
+            [com.stuartsierra.component :as component]))
 
 (def ^{:const true} IDENTITY_IDX_NAME "login")
 

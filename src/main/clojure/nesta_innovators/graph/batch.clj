@@ -9,6 +9,7 @@
             [clojure.java.io :as io]
             [clojure.walk :as walk]
             [kixipipe.protocols :as kixi]
+            [com.stuartsierra.component :as component]
             [schema.core :as s]
             )
   (:import [org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream]
@@ -45,15 +46,15 @@
   (-create-relationship [this id1 id2 type m]))
 
 (deftype Neo4jBatchInserter [^BatchInserter inserter indexes]
-  kixi/Lifecycle
-  (kixi/init [this system])
-  (kixi/start [this system]
-    (assoc system ::session this))
-  (kixi/stop [this system]
+  component/Lifecycle
+  
+  (start [this]
+    this)
+  (stop [this]
     (doseq [index indexes]
       (.shutdown ^BatchInserterIndexProvider index))
     (.shutdown inserter)
-    (dissoc system ::session))
+    this)  
   INeo4jFactory
   (-create-node [this id m index? labels]
     (let [alabels (into-array Label labels)
@@ -64,8 +65,7 @@
       (when index?
         (doseq [ index indexes]
           (println (type index))
-          (.add index inserter n m))))
-    )
+          (.add index inserter n m)))))
   (-create-relationship [this id1 id2 type m]
     (.createRelationship inserter id1 id2 type m)))
 

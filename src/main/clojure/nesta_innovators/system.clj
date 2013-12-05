@@ -8,20 +8,23 @@
             [nesta-innovators.neo4j          :as n]
             [nesta-innovators.graph.batch    :as grb]
             [nesta-innovators.pipeline       :as p]
+            [nesta-innovators.http           :as http]
             [kixipipe.storage.s3             :as s3]
-            [kixipipe.application            :refer [with-defaults defsystem]]))
+            [kixipipe.application            :refer [defsystem with-defaults]]))
 
-(defsystem NestaSystem 
-  {:components {:s3              (s3/mk-session (with-defaults :s3))
+(defsystem nesta [config]
+  {:components {:s3              (s3/mk-session (with-defaults config :s3))
                 ;;:neo4j           (n/new-neo4j (with-defaults :neo4j))
-                :github          (gh/new-github (with-defaults :github))
-                :stackexchange   (se/new-stackexchange (with-defaults :stackexchange))
-                :open-corporates (oc/new-open-corporates (with-defaults :open-corporates))
-                :meetup          (mu/new-meetup (with-defaults :meetup))
-                :pipeline        (p/new-pipeline (with-defaults :pipeline))}
-   :dependencies {:pipeline {:storage         :storage
+                :github          (gh/new-github (with-defaults config :github)) 
+                :stackexchange   (se/new-stackexchange (with-defaults config :stackexchange)) 
+                :open-corporates (oc/new-open-corporates (with-defaults config :open-corporates))
+                :meetup          (mu/new-meetup (with-defaults config :meetup)) 
+                :http            (http/new-http (with-defaults config :github))
+                :pipeline        (p/new-pipeline (with-defaults config :pipeline))}
+   :dependencies {:pipeline {:storage         :s3
                              ;;:graph           :neo4j
                              :github          :github
                              :stackexchange   :stackexchange
                              :open-corporates :open-corporates
-                             :meetup          :meetup}}})
+                             :meetup          :meetup}
+                  :github {:http :http}}})

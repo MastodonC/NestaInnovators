@@ -43,7 +43,7 @@
   </root>
 
   <logger name="com.amazonaws" level="INFO" />
-  <logger name="org.apache" level="INFO" />
+  <logger name="org.apache" level="DEBUG" />
   <logger name="clj-ssh.ssh" level="INFO" />
   <logger name="cascading" level="INFO"/>
 

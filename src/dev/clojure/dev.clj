@@ -1,11 +1,8 @@
 (ns dev
-<<<<<<< HEAD
   (:require [clojure.tools.namespace.repl :refer [refresh refresh-all]]
             [nesta-innovators.system :as system]
             [kixipipe.application :as kixi]
             [com.stuartsierra.component :as component]))
-
-(def system nil)
 
 (defn init
   "Constructs the current development system."

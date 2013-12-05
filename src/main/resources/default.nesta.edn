@@ -1,30 +1,30 @@
 {
- :kixipipe/defaults {:download-dir "/tmp"}
- :neo4j         {:uri "http://localhost:7474/db/data"}
- :neo4j-batch   {:store-dir "/tmp/graph.db"
-                 :store-config
-                 {
-                  :cache_type, "weak",
-                  :neostore.nodestore.inserter.mapped_memory, "4096M",
-                  :neostore.relationshipstore.inserter.mapped_memory, "4096M",
-                  :neostore.propertystore.inserter.mapped_memory, "8192M",
-                  :neostore.propertystore.inserter.strings.mapped_memory, "0M",
-                  :neostore.propertystore.inserter.arrays.mapped_memory, "0M"
+ :neo4j           {:uri "http://localhost:7474/db/data"}
+ :neo4j-batch     {:store-dir "/tmp/graph.db"
+                   :store-config
+                   {
+                    :cache_type, "weak",
+                    :neostore.nodestore.inserter.mapped_memory, "4096M",
+                    :neostore.relationshipstore.inserter.mapped_memory, "4096M",
+                    :neostore.propertystore.inserter.mapped_memory, "8192M",
+                    :neostore.propertystore.inserter.strings.mapped_memory, "0M",
+                    :neostore.propertystore.inserter.arrays.mapped_memory, "0M"
+                    }
+                   :indexes ['org.neo4j.index.lucene.unsafe.batchinsert.LuceneBatchInserterIndexProvider]
+                   }
+ :github         {:auth            "41ae276c544a470c1d3696c986df4a0803ad8e86"
+                  :rate-limit      [5000 :per-hour]
+                  :max-connections 2}
+ :stackexchange  {:auth            "rMMlVB4zqkoQB4SQ3anw1w"
+                  :rate-limit      [300 :per-hour]
+                  :max-connections 2}
+ :meetup         {:auth            "543fa67477751e50693c66658564c"
+                  :rate-limit      [300 :per-hour] ; estimated
+                  :max-connections 2}
+ :http-client    {:max-connections 10}
+ :s3             {:access-key "AKIAIAIUNEGCG2OEMTKQ"
+                  :secret-key "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"
+                  :file-bucket "mc-innovators"
+                  :download-dir "/tmp"
                   }
-                  :indexes ['org.neo4j.index.lucene.unsafe.batchinsert.LuceneBatchInserterIndexProvider]
-                 }
- :github        {:auth            "41ae276c544a470c1d3696c986df4a0803ad8e86"
-                 :rate-limit      [5000 :per-hour]
-                 :max-connections 2}
- :stackexchange {:auth            "rMMlVB4zqkoQB4SQ3anw1w"
-                 :rate-limit      [300 :per-hour]
-                 :max-connections 2}
- :meetup        {:auth            "543fa67477751e50693c66658564c"
-                 :rate-limit      [300 :per-hour] ; estimated
-                 :max-connections 2}
- :http-client   {:max-connections 10}
- :s3            {:access-key "AKIAIAIUNEGCG2OEMTKQ"
-                 :secret-key "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"
-                 :file-bucket "mc-innovators"
-                 }
  }

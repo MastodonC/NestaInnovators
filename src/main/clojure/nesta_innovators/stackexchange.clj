@@ -49,10 +49,10 @@
   (->uri [this parts]
     (apply str BASE_API_URI (interpose \/ (map name parts)))))
 
-(def ^:private Config {:auth s/String
+(def ^:private Config {:auth String
                        :rate-limit (s/pair s/Int "limit"
                                            (s/either s/Int s/Keyword) "period")
-                       (s/optional-key :max-connections) s/Number})
+                       (s/optional-key :max-connections) s/Int})
 
 (defn new-stackexchange [config & [options]]
   (s/validate Config config)

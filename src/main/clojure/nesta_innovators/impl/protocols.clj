@@ -23,6 +23,9 @@
 (defprotocol Paged
   (paged-response [this uri query-params]))
 
+(defprotocol AsyncProcess
+  (process-uri [this uri query-params f]))
+
 (defprotocol ToUri
   (->uri [this parts]))
 
