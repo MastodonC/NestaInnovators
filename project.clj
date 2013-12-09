@@ -8,9 +8,10 @@
                  [org.clojure/data.xml "0.0.7"]
                  [org.clojure/data.csv "0.1.2"]
                  [org.clojure/core.async "0.1.242.0-44b1e3-alpha"]
+                 [cheshire "5.2.0"]
                  [org.apache.commons/commons-compress "1.5"]
                  [clj-http "0.7.6"]
-                 [http-kit "2.1.10"]
+                 [http-kit "2.1.13"]
                  [kixipipe "0.12.0-SNAPSHOT"]
                  [ring/ring-codec "1.0.0"]
                  [clojurewerkz/neocons "1.1.0"]
@@ -37,6 +38,6 @@
   :resource-paths ["src/main/resources"]
   :profiles {:dev {:source-paths ["src/dev/clojure" "src/main/clojure"]
                    :dependencies [[org.clojure/tools.namespace "0.2.3"]]}
-             :uberjar {:aot [nesta-innovators.main]
-                       :main nesta-innovators.main}
-             })
+             :uberjar {:aot [nesta-innovators.quick]
+                       :main nesta-innovators.quick}})
+
