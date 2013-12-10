@@ -13,9 +13,15 @@
 
 (def BASE_API_URI "https://api.github.com/")
 
+(def tokens {:mastodonc "41ae276c544a470c1d3696c986df4a0803ad8e86"
+             :thor2013  "9df56817ffcbb4d64ea9d42a72fd23203440f98c"})
+
 (def auth {:headers
            {"Authorization" "token 41ae276c544a470c1d3696c986df4a0803ad8e86"}})
 
+(def auth2 {:headers
+            {"Authorization" "token 9df56817ffcbb4d64ea9d42a72fd23203440f98c"}})
+          
 (defn now [] (System/currentTimeMillis))
 
 (defn http-get 
@@ -24,7 +30,7 @@
      (log/debugf "HTTP GET %s" url)
      (let [c (chan)]
        (http/get url
-                 (merge auth opts)
+                 (merge auth2 opts)
                  (fn [r] (put! c r)))
        c)))
 
@@ -97,6 +103,17 @@
            <!
            :body
            (map :login))))
+
+(defn user-repos
+  "Takes a github user login and returns a channel containing a map of
+   the user repos after removing some redundant information."
+  [login]
+  (go (some->> (->uri "users" login "repos")
+           request-and-process 
+           <!
+           :body
+           (map clean)
+           (map #(assoc % :owner login)))))
 
 (defn decode-link-headers [response]
   (if-let [link-headers (get-in response [:headers :link])]
