@@ -130,7 +130,7 @@
 (defn all-user-followers
   ([login] (all-user-followers login (->uri "users" login "followers")))
   ([login uri]
-     (let [[page next-uri] (map <!! (user-followers login uri))]
+     (let [[page next-uri] (<!! (user-followers login uri))]
        (if next-uri
          (lazy-cat page
                    (all-user-followers login next-uri))
