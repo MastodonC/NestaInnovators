@@ -152,13 +152,12 @@
       (next-link-uri r))))))
 
 (defn all-user-repos 
-  ([] (all-user-repos nil))
-  ([uri]
-     (log/debug uri)
-     (let [[page next-uri] (map <!! (user-repos uri))]
+  ([login] (all-user-repos login (->uri "users" login "repos")))
+  ([login uri]
+     (let [[page next-uri] (<!! (user-repos login uri))]
        (if next-uri
          (lazy-cat page
-                   (all-user-repos next-uri))
+                   (all-user-repos login next-uri))
          page))))
 
 (defn users
@@ -180,7 +179,6 @@
   "Returns a lazy sequence of all users. Lazyness is per page." 
   ([] (all-users nil))
   ([uri]
-     (log/debug uri)
      (let [[page next-uri] (<!! (users uri))]
        (if next-uri
          (lazy-cat page
