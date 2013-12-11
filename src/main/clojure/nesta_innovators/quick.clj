@@ -15,18 +15,12 @@
 (def BASE_API_URI "https://api.github.com/")
 
 (def tokens {:mastodonc "41ae276c544a470c1d3696c986df4a0803ad8e86"
-             :thor2013  "9df56817ffcbb4d64ea9d42a72fd23203440f98c"})
-
-(def auth {:headers
-           {"Authorization" "token 41ae276c544a470c1d3696c986df4a0803ad8e86"}})
-
-(def auth2 {:headers
-            {"Authorization" "token 9df56817ffcbb4d64ea9d42a72fd23203440f98c"}})
-          
+             :thor2013  "9df56817ffcbb4d64ea9d42a72fd23203440f98c"
+             :loki2013  "1db481f048833ff828178fe3a0ff9ef5d61121ba"})          
 (defn now [] (System/currentTimeMillis))
 
 ;; TODO move this into component setup.
-(def ^:dynamic *auth* (:thor2013  tokens))
+(def ^:dynamic *auth* (:loki2013  tokens))
 
 (defn http-get 
   ([url] (http-get nil url))
@@ -104,17 +98,7 @@
       decode-link-headers
       (get-in [:links :next :href])))
 
-(defn- split-chan 
-  "Takes a count and a channel and returns a vector of n output channels.
-   A value is read from the in channels and copied to the output channels."
-  [n in]
-  (let [in' (chan)
-        m (mult in)
-        outs     (reduce (fn [a c] (conj a (tap m (chan)))) [] (range n))]
-    (go (>! in' (<! in)))
-    outs))
-
-(defn assoc-header [m k r]
+(defn assoc-header [m k]
   (-> m
       (get-in [:headers k])))
 
@@ -127,7 +111,7 @@
      (-> r
          :body
          clean
-         (assoc :etag (get-etag r))))))
+         (assoc-header :etag)))))
 
 (defn user-followers
   "Takes a github user login and returns a channel containing a
@@ -170,17 +154,16 @@
    retrieve the following page."
   ([] (users nil))
   ([next-uri]
-     (let [[in out1 out2] (split-chan 2)]
-       (go (>! in (<! (request-and-process (or next-uri (->uri "users"))))))
-       (vector
-        (go
-         (->> out1 
-              <!
+     (go
+      (let [r (<! (request-and-process (or next-uri (->uri "users"))))]
+
+        (vector
+         (->> r
               :body 
               (keep (comp user-details :login))
               (map <!!) ;; TODO - does mapping this separately affect parallelism?           
-              ))
-        (next-link-uri out2)))))
+              )
+         (next-link-uri r))))))
 
 (defn all-users 
   "Returns a lazy sequence of all users. Lazyness is per page." 
@@ -197,10 +180,10 @@
   (mapv #(if (string? %) (str/replace % #"[^\w\t \.@/:'\",!#\$%^&\*()_\+\-]" " ") %) xs))
 
 
-(defn dump-to-csv [coll per-file dir filename-template vals-fn]
+(defn dump-to-csv [coll per-file dir filename-template vals-fn file-index]
   (let [n (->long per-file)
         coll (partition n n nil coll)]
-    (loop [n 0 [data & more] coll]
+    (loop [n (or file-index 0) [data & more] coll]
       (with-open [out (io/writer (io/file dir (format filename-template n)))]
         (csv/write-csv out (mapv (comp clean-csv vals-fn) data) :separator \tab :quote? (constantly true)))
       (when more (recur (inc n) more)))))
@@ -218,7 +201,7 @@
 
 (defn dump-users [per-file [dir & more]]
   (let [n (->long per-file) 
-        since (first more)]
+        [since file-index] more]
     (dump-to-csv 
      (all-users 
       (str "https://api.github.com/users?since=" since)) 
@@ -228,7 +211,8 @@
      (juxt :id :login :followers :following :gravatar_id 
            :name :updated_at :bio :location :public_repos 
            :created_at :site_admin :url :email :type 
-           :public_gists :hireable :blog  :company))))
+           :public_gists :hireable :blog  :company)
+     file-index)))
 
 (defn dump-followers [per-file [user-list dir]]
   (with-open [in (io/reader user-list)]
@@ -238,9 +222,19 @@
        nil
        dir
        (str login "_followers.tsv")
-       identity))))
+       identity
+       nil))))
 
-(defn dump-repos [[user-list per-file]])
+(defn dump-repos [[user-list per-file]]
+    (with-open [in (io/reader user-list)]
+    (doseq [login (line-seq in)]
+      (dump-to-csv
+       (map vector (repeat login) (all-user-repos login))
+       nil
+       dir
+       (str login "_followers.tsv")
+       identity
+       nil))))
 
 (defn -main [& args]
   (let [[opts args banner]
