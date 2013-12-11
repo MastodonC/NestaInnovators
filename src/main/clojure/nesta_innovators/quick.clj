@@ -140,13 +140,27 @@
 (defn user-repos
   "Takes a github user login and returns a channel containing a map of
    the user repos after removing some redundant information."
-  [login]
-  (go (some->> (->uri "users" login "repos")
-           request-and-process 
-           <!
+  ([login]
+     (user-repos login (->uri "users" login "repos")))
+  ([login uri]
+  (go 
+   (let [r (<! (request-and-process uri))]
+     (vector
+      (->> r
            :body
            (map clean)
-           (map #(assoc % :owner login)))))
+           (map #(assoc % :owner login)))
+      (next-link-uri r))))))
+
+(defn all-user-repos 
+  ([] (all-user-repos nil))
+  ([uri]
+     (log/debug uri)
+     (let [[page next-uri] (map <!! (user-repos uri))]
+       (if next-uri
+         (lazy-cat page
+                   (all-user-repos next-uri))
+         page))))
 
 (defn users
   "Returns a 2 element sequence with a channel containing a sequence of a page of user details and the next page data.
@@ -225,7 +239,7 @@
        identity
        nil))))
 
-(defn dump-repos [[user-list per-file]]
+(defn dump-repos [per-file [user-list dir]]
     (with-open [in (io/reader user-list)]
     (doseq [login (line-seq in)]
       (dump-to-csv
