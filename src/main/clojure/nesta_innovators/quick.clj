@@ -99,8 +99,7 @@
       (get-in [:links :next :href])))
 
 (defn assoc-header [m k]
-  (-> m
-      (get-in [:headers k])))
+  (assoc m k (get-in m [:headers k])))
 
 (defn user-details 
   "Takes a github user login and returns a channel containing a map of
@@ -170,13 +169,11 @@
   ([next-uri]
      (go
       (let [r (<! (request-and-process (or next-uri (->uri "users"))))]
-
         (vector
          (->> r
               :body 
               (keep (comp user-details :login))
-              (map <!!) ;; TODO - does mapping this separately affect parallelism?           
-              )
+              (map <!!))
          (next-link-uri r))))))
 
 (defn all-users 
@@ -184,7 +181,7 @@
   ([] (all-users nil))
   ([uri]
      (log/debug uri)
-     (let [[page next-uri] (map <!! (users uri))]
+     (let [[page next-uri] (<!! (users uri))]
        (if next-uri
          (lazy-cat page
                    (all-users next-uri))
@@ -269,9 +266,9 @@
       (println banner)
       (System/exit 0))
       
-    (let [per-file (:partition-size opts)]
-      (condp #(%1 %2) opts
-        :users     (dump-users per-file args)
-        :followers (dump-followers per-file args)
-        :repos     (dump-repos per-file args))))
-  )
+    (binding [*auth* (get tokens (name (:account opts)))]
+      (let [per-file (:partition-size opts)]
+        (condp #(%1 %2) opts
+          :users     (dump-users per-file args)
+          :followers (dump-followers per-file args)
+          :repos     (dump-repos per-file args))))))
