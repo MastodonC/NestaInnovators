@@ -20,6 +20,7 @@
                  [iota "1.1.1"]
                  [org.neo4j/neo4j "2.0.0-M05"]
                  [commons-io "1.3.2"]
+                 [twitter-api "0.7.4"]
                  ;; [cascalog/cascalog-core "2.0.0-SNAPSHOT" :exclusions [[org.slf4j/slf4j-log4j12] [log4j]]]
                  ;; [cascalog/cascalog-more-taps "2.0.0-SNAPSHOT"]
                  [cascalog/cascalog-core "1.10.2" :exclusions [[org.slf4j/slf4j-log4j12] [log4j]]]
