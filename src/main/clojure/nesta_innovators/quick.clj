@@ -49,7 +49,8 @@
     (Long/parseLong s)))
 
 (defn rate-limit-reset->datestr [s]
-  (java.util.Date. (* 1000 (->long s))))
+  (when s
+    (java.util.Date. (* 1000 (->long s)))))
 
 (def rate-limit (atom {}))
 
@@ -257,11 +258,15 @@
   (with-open [in (io/reader user-list)]
     (doseq [login (line-seq in)]
       (dump-to-csv
-       (map vector (repeat login) (all-user-repos login))
+       (all-user-repos login)
        nil
        dir
-       (str login "_followers.tsv")
-       identity
+       (str login "_repos.tsv")
+       (juxt :name :full_name :owner :has_issues :forks_count :fork :pushed_at
+             :default_branch :watchers :updated_at :has_wiki  :language :size
+             :created_at :private :homepage :url :stargazers_count :has_downloads  
+             :watchers_count :permissions :open_issues_count :master_branch
+             :open_issues :id :forks :description)
        nil))))
 
 ;; This gets called from the java wrapper main method.
