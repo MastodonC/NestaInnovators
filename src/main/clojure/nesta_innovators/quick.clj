@@ -100,8 +100,8 @@
       decode-link-headers
       (get-in [:links :next :href])))
 
-(defn assoc-header [m k]
-  (assoc m k (get-in m [:headers k])))
+(defn assoc-header [m r k]
+  (assoc m k (get-in r [:headers k])))
 
 (defn user-details 
   "Takes a github user login and returns a channel containing a map of
@@ -113,7 +113,7 @@
        (-> r
            :body
            clean
-           (assoc-header :etag))))))
+           (assoc-header r :etag))))))
 
 (defn user-followers
   "Takes a github user login and returns a channel containing a
@@ -221,7 +221,7 @@
      (->long n) 
      dir
      "users_%010d.tsv"
-     (juxt :id :login :followers :following :gravatar_id 
+     (juxt :etag :id :login :followers :following :gravatar_id 
            :name :updated_at :bio :location :public_repos 
            :created_at :site_admin :url :email :type 
            :public_gists :hireable :blog  :company)
