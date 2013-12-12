@@ -58,6 +58,8 @@
         reset           (* 1000 reset)
         ms              (quot (- reset (now))
                               (max (- remaining 100) 1))]
+    (when (< remaining 100) 
+      (log/debug "Limiting " @rate-limit))
     (timeout ms)))
 
 (defn backoff-feedback [hdrs]
@@ -76,7 +78,6 @@
                    <!
                    ->json)]
      (backoff-feedback (:headers resp))
-     
      resp)))
 
 (defn clean [x]
@@ -105,12 +106,13 @@
   "Takes a github user login and returns a channel containing a map of
    the user details after removing some redundant information."
   [login]
-  (go 
-   (let [r (<! (request-and-process (->uri  "users" login)))]
-     (-> r
-         :body
-         clean
-         (assoc-header :etag)))))
+  (when login
+    (go 
+     (let [r (<! (request-and-process (->uri  "users" login)))]
+       (-> r
+           :body
+           clean
+           (assoc-header :etag))))))
 
 (defn user-followers
   "Takes a github user login and returns a channel containing a
@@ -142,7 +144,7 @@
   ([login]
      (user-repos login (->uri "users" login "repos")))
   ([login uri]
-  (go 
+  (go
    (let [r (<! (request-and-process uri))]
      (vector
       (->> r
@@ -197,19 +199,20 @@
         (csv/write-csv out (mapv (comp clean-csv vals-fn) data) :separator \tab :quote? (constantly true)))
       (when more (recur (inc n) more)))))
 
-(defn rate-limit-stats []
-  (let [to-date #(java.util.Date. (* 1000 (->long %)))]
-    (clojure.pprint/pprint 
-     (-> (http-get "https://api.github.com/rate_limit")
-         <!!
-         :headers
-         (select-keys [:x-ratelimit-remaining 
-                       :x-ratelimit-reset 
-                       :x-ratelimit-limit])
-         (update-in [:x-ratelimit-reset] to-date)))))
+(defn rate-limit-stats [account]
+  (binding [*auth* (get tokens account)]
+    (let [to-date #(java.util.Date. (* 1000 (->long %)))]
+      (clojure.pprint/pprint 
+       (-> (http-get "https://api.github.com/rate_limit")
+           <!!
+           :headers
+           (select-keys [:x-ratelimit-remaining 
+                         :x-ratelimit-reset 
+                         :x-ratelimit-limit])
+           (update-in [:x-ratelimit-reset] to-date))))))
 
 (defn dump-users [per-file [dir & more]]
-  (let [n (->long per-file) 
+    (let [n (->long per-file) 
         [since file-index] more]
     (dump-to-csv 
      (all-users 
@@ -221,7 +224,7 @@
            :name :updated_at :bio :location :public_repos 
            :created_at :site_admin :url :email :type 
            :public_gists :hireable :blog  :company)
-     file-index)))
+     (if file-index (->long file-index) 0))))
 
 (defn dump-followers [per-file [user-list dir]]
   (with-open [in (io/reader user-list)]
@@ -234,6 +237,16 @@
        identity
        nil))))
 
+(defn dump-user-details-from-list [per-file [user-list dir]]
+  (with-open [in (io/reader user-list)]
+    (doseq [login (line-seq in)]
+      (dump-to-csv
+       (map user-details login)
+       nil
+       dir
+       (str login "users_%10d.tsv")
+       identity
+       nil))))
 (defn dump-repos [per-file [user-list dir]]
     (with-open [in (io/reader user-list)]
     (doseq [login (line-seq in)]
@@ -245,6 +258,7 @@
        identity
        nil))))
 
+;; This gets called from the java wrapper main method.
 (defn -main [& args]
   (let [[opts args banner]
         (cli args
@@ -260,12 +274,15 @@
              ["-r" "--repos" "Download repos"
               :flag true :default false])]
 
+
+    
     (when (:help opts)
       (println banner)
       (System/exit 0))
       
     (binding [*auth* (get tokens (name (:account opts)))]
       (let [per-file (:partition-size opts)]
+        (log/debugf "partition-size: %d" per-file)
         (condp #(%1 %2) opts
           :users     (dump-users per-file args)
           :followers (dump-followers per-file args)
