@@ -13,7 +13,7 @@
                  [org.apache.commons/commons-compress "1.6"]
                  [clj-http "0.7.8"]
                  [http-kit "2.1.13"]
-                 [kixipipe "0.12.0-SNAPSHOT"]
+                 [kixipipe "0.12.2"]
                  [ring/ring-codec "1.0.0"]
                  [clojurewerkz/neocons "2.0.0"]
                  [hiccup "1.0.4"]
