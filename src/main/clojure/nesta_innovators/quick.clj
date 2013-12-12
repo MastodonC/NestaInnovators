@@ -30,7 +30,7 @@
      (let [c (chan)]
        (http/get url
                  (merge {:headers
-                         {"Authorization" #spy/d (str "token " *auth*)}} opts)
+                         {"Authorization" (str "token " *auth*)}} opts)
                  (fn [r] (put! c r)))
        c)))
 
