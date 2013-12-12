@@ -17,6 +17,7 @@
 (def tokens {:mastodonc "41ae276c544a470c1d3696c986df4a0803ad8e86"
              :thor2013  "9df56817ffcbb4d64ea9d42a72fd23203440f98c"
              :loki2013  "1db481f048833ff828178fe3a0ff9ef5d61121ba"})          
+
 (defn now [] (System/currentTimeMillis))
 
 ;; TODO move this into component setup.
@@ -29,7 +30,7 @@
      (let [c (chan)]
        (http/get url
                  (merge {:headers
-                         {"Authorization" (str "token " *auth*)}} opts)
+                         {"Authorization" #spy/d (str "token " *auth*)}} opts)
                  (fn [r] (put! c r)))
        c)))
 
@@ -247,8 +248,9 @@
        (str login "users_%10d.tsv")
        identity
        nil))))
+
 (defn dump-repos [per-file [user-list dir]]
-    (with-open [in (io/reader user-list)]
+  (with-open [in (io/reader user-list)]
     (doseq [login (line-seq in)]
       (dump-to-csv
        (map vector (repeat login) (all-user-repos login))
@@ -264,7 +266,8 @@
         (cli args
              ["-h" "--help" "Show help"
               :flag true :default false]
-             ["-a" "--account" (str "Choose account, one of " (apply str (interpose \, (map name (keys tokens)))))]
+             ["-a" "--account" (str "Choose account, one of " (apply str (interpose \, (map name (keys tokens)))))
+              :default "mastodonc"]
              ["-s" "--partition-size" "Partition Size"
               :default 1000 :parse-fn ->long]
              ["-u" "--users" "Download users"
@@ -273,17 +276,19 @@
               :flag true :default false]
              ["-r" "--repos" "Download repos"
               :flag true :default false])]
-
-
     
     (when (:help opts)
       (println banner)
       (System/exit 0))
       
-    (binding [*auth* (get tokens (name (:account opts)))]
-      (let [per-file (:partition-size opts)]
-        (log/debugf "partition-size: %d" per-file)
-        (condp #(%1 %2) opts
-          :users     (dump-users per-file args)
-          :followers (dump-followers per-file args)
-          :repos     (dump-repos per-file args))))))
+    (if-let [account (get tokens (keyword (:account opts)))]
+      (binding [*auth* account]
+        (let [per-file (:partition-size opts)]
+          (log/debugf "partition-size: %d" per-file)
+          (condp #(%1 %2) opts
+            :users     (dump-users per-file args)
+            :followers (dump-followers per-file args)
+            :repos     (dump-repos per-file args))))
+      (do
+        (println "Bad account")
+        (System/exit 1)))))
