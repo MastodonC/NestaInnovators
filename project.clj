@@ -34,7 +34,8 @@
                  ]
   :plugins [[codox "0.6.4"]
             [lein-marginalia "0.7.1"]
-            [lein-release "1.0.4"]]
+            [lein-release "1.0.4"]
+            [s3-wagon-private "1.1.2"]]
   :java-source-paths ["src/main/java"]
   :source-paths ["src/main/clojure"]
   :test-paths ["src/test/clojure"]
@@ -43,7 +44,8 @@
                    :dependencies [[org.clojure/tools.namespace "0.2.4"]]}
              :uberjar {:aot [nesta-innovators.quick]
                        :main nesta-innovators.quick}}
-    :lein-release {:scm :git
-                   :deploy-via :lein-install}
+  :lein-release {:scm :git}
+  :repositories [["releases" {:url "s3p://mc-maven-repo/releases" :creds :gpg}]
+                 ["snapshots" {:url "s3p://mc-maven-repo/snapshots" :creds :gpg}]]
   )
 
