@@ -1,6 +1,6 @@
 (def slf4j-version "1.7.5")
 (def cascalog-version "2.0.0")
-(defproject nesta-innovators "0.2.0-SNAPSHOT"
+(defproject nesta-innovators "0.2.0"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -32,6 +32,9 @@
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
                  [org.apache.hadoop/hadoop-core "1.2.1" :scope "provided"]
                  ]
+  :plugins [[codox "0.6.4"]
+            [lein-marginalia "0.7.1"]
+            [lein-release "1.0.4"]]
   :java-source-paths ["src/main/java"]
   :source-paths ["src/main/clojure"]
   :test-paths ["src/test/clojure"]
