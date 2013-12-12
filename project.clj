@@ -1,8 +1,8 @@
 (def slf4j-version "1.7.5")
 (def cascalog-version "2.0.0")
-(defproject nesta-innovators "0.2.0"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+(defproject nesta-innovators "0.2.0-SNAPSHOT"
+  :description "Nesta Innovators"
+  :url "http://www.mastodonc.com"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
@@ -42,5 +42,8 @@
   :profiles {:dev {:source-paths ["src/dev/clojure" "src/main/clojure"]
                    :dependencies [[org.clojure/tools.namespace "0.2.4"]]}
              :uberjar {:aot [nesta-innovators.quick]
-                       :main nesta-innovators.quick}})
+                       :main nesta-innovators.quick}}
+    :lein-release {:scm :git
+                   :deploy-via :lein-install}
+  )
 
