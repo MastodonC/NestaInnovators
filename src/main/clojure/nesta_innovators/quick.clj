@@ -10,7 +10,8 @@
             [cheshire.core         :as json]
             [clojure.java.io       :as io]
             [clojure.tools.logging :as log]
-            [clojure.string        :as str]))
+            [clojure.string        :as str]
+            [clj-time.format       :as tf]))
 
 (def BASE_API_URI "https://api.github.com/")
 
@@ -21,7 +22,7 @@
 (defn now [] (System/currentTimeMillis))
 
 ;; TODO move this into component setup.
-(def ^:dynamic *auth* (:loki2013  tokens))
+(def ^:dynamic *auth* :loki2013)
 
 (defn http-get 
   ([url] (http-get nil url))
@@ -30,7 +31,7 @@
      (let [c (chan)]
        (http/get url
                  (merge {:headers
-                         {"Authorization" (str "token " *auth*)}} opts)
+                         {"Authorization" (str "token " (get tokens *auth*))}} opts)
                  (fn [r] (put! c r)))
        c)))
 
@@ -47,6 +48,9 @@
     number? (long s)
     (Long/parseLong s)))
 
+(defn rate-limit-reset->datestr [s]
+  (java.util.Date. (* 1000 (->long s))))
+
 (def rate-limit (atom {}))
 
 (defn backoff []
@@ -60,7 +64,8 @@
         ms              (quot (- reset (now))
                               (max (- remaining 100) 1))]
     (when (< remaining 100) 
-      (log/debug "Limiting " @rate-limit))
+      (log/debugf "Limiting [%s] - %s" *auth* (update-in @rate-limit [:reset] 
+                                                         rate-limit-reset->datestr)))
     (timeout ms)))
 
 (defn backoff-feedback [hdrs]
@@ -201,16 +206,15 @@
       (when more (recur (inc n) more)))))
 
 (defn rate-limit-stats [account]
-  (binding [*auth* (get tokens account)]
-    (let [to-date #(java.util.Date. (* 1000 (->long %)))]
-      (clojure.pprint/pprint 
-       (-> (http-get "https://api.github.com/rate_limit")
-           <!!
-           :headers
-           (select-keys [:x-ratelimit-remaining 
-                         :x-ratelimit-reset 
-                         :x-ratelimit-limit])
-           (update-in [:x-ratelimit-reset] to-date))))))
+  (binding [*auth* account]
+    (clojure.pprint/pprint 
+     (-> (http-get "https://api.github.com/rate_limit")
+         <!!
+         :headers
+         (select-keys [:x-ratelimit-remaining 
+                       :x-ratelimit-reset 
+                       :x-ratelimit-limit])
+         (update-in [:x-ratelimit-reset] rate-limit-reset->datestr)))))
 
 (defn dump-users [per-file [dir & more]]
     (let [n (->long per-file) 
@@ -267,7 +271,7 @@
              ["-h" "--help" "Show help"
               :flag true :default false]
              ["-a" "--account" (str "Choose account, one of " (apply str (interpose \, (map name (keys tokens)))))
-              :default "mastodonc"]
+              :default "mastodonc" :parse-fn keyword]
              ["-s" "--partition-size" "Partition Size"
               :default 1000 :parse-fn ->long]
              ["-u" "--users" "Download users"
@@ -281,14 +285,15 @@
       (println banner)
       (System/exit 0))
       
-    (if-let [account (get tokens (keyword (:account opts)))]
-      (binding [*auth* account]
-        (let [per-file (:partition-size opts)]
-          (log/debugf "partition-size: %d" per-file)
-          (condp #(%1 %2) opts
-            :users     (dump-users per-file args)
-            :followers (dump-followers per-file args)
-            :repos     (dump-repos per-file args))))
-      (do
-        (println "Bad account")
-        (System/exit 1)))))
+    (let [account (:account opts)]
+      (if (contains? tokens account)
+       (binding [*auth* account]
+         (let [per-file (:partition-size opts)]
+           (log/debugf "partition-size: %d" per-file)
+           (condp #(%1 %2) opts
+             :users     (dump-users per-file args)
+             :followers (dump-followers per-file args)
+             :repos     (dump-repos per-file args))))
+       (do
+         (println "Bad account")
+         (System/exit 1))))))
