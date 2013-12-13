@@ -1,6 +1,6 @@
 (def slf4j-version "1.7.5")
 (def cascalog-version "1.10.1")
-(defproject nesta-innovators "0.2.5"
+(defproject nesta-innovators "0.2.6-SNAPSHOT"
   :description "Nesta Innovators"
   :url "http://www.mastodonc.com"
   :license {:name "Eclipse Public License"
