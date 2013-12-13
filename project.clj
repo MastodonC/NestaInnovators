@@ -1,6 +1,6 @@
 (def slf4j-version "1.7.5")
-(def cascalog-version "2.0.0")
-(defproject nesta-innovators "0.2.5-SNAPSHOT"
+(def cascalog-version "1.10.1")
+(defproject nesta-innovators "0.2.5"
   :description "Nesta Innovators"
   :url "http://www.mastodonc.com"
   :license {:name "Eclipse Public License"
@@ -30,7 +30,8 @@
                  [org.slf4j/jul-to-slf4j         ~slf4j-version]
                  [org.slf4j/jcl-over-slf4j       ~slf4j-version]
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
-                 [org.apache.hadoop/hadoop-core "1.2.1" :scope "provided"]
+                 [org.apache.hadoop/hadoop-core "1.1.1" :scope "provided"]
+                 [clojure-csv/clojure-csv "2.0.0-alpha1"]
                  ]
   :plugins [[codox "0.6.4"]
             [lein-marginalia "0.7.1"]
