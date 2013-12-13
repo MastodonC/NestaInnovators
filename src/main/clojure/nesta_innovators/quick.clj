@@ -116,10 +116,11 @@
   (when login
     (go 
      (let [r (<! (request-and-process (->uri  "users" login)))]
-       (-> r
-           :body
-           clean
-           (assoc-header r :etag))))))
+       (when (= (:status r) 200)
+         (-> r
+             :body
+             clean
+             (assoc-header r :etag)))))))
 
 (defn user-followers
   "Takes a github user login and returns a channel containing a
@@ -130,11 +131,12 @@
   ([login uri]
      (go
       (let [r (<! (request-and-process uri))]
-        (vector 
-         (->> r
-              :body
-              (map :login))
-         (next-link-uri r))))))
+        (when (= (:status r) 200)
+         (vector 
+          (->> r
+               :body
+               (map :login))
+          (next-link-uri r)))))))
 
 (defn all-user-followers
   ([login] (all-user-followers login (->uri "users" login "followers")))
@@ -153,12 +155,13 @@
   ([login uri]
   (go
    (let [r (<! (request-and-process uri))]
-     (vector
-      (->> r
-           :body
-           (map clean)
-           (map #(assoc % :owner login)))
-      (next-link-uri r))))))
+     (when (= (:status r) 200)
+       (vector
+        (->> r
+             :body
+             (map clean)
+             (map #(assoc % :owner login)))
+        (next-link-uri r)))))))
 
 (defn all-user-repos 
   ([login] (all-user-repos login (->uri "users" login "repos")))
@@ -177,12 +180,13 @@
   ([next-uri]
      (go
       (let [r (<! (request-and-process (or next-uri (->uri "users"))))]
-        (vector
-         (->> r
-              :body 
-              (keep (comp user-details :login))
-              (map <!!))
-         (next-link-uri r))))))
+        (when (= (:status r) 200)
+         (vector
+          (->> r
+               :body 
+               (keep (comp user-details :login))
+               (map <!!))
+          (next-link-uri r)))))))
 
 (defn all-users 
   "Returns a lazy sequence of all users. Lazyness is per page." 
