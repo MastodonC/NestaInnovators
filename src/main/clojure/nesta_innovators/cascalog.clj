@@ -1,24 +1,25 @@
 (ns nesta-innovators.cascalog
   "Short package description."
   (:require [cascalog.api :refer :all]
-            [cascalog.logic.ops :as ops]
+            ;; [cascalog.logic.ops :as ops]
+            [cascalog.ops :as ops]
             [cascalog.more-taps :refer [hfs-delimited]]
             [clojure.string :as s]
             [clojure.java.io :as io]
             [clj-time.format :as tf]
             [clojure.tools.logging :as log]
-            ))
+            [clojure-csv.core :as csv]))
 
 (defn parse-date [s]
   (when-let [dt (tf/parse s)]
     (.getMillis dt)))
 
 (defn- split-line12 [s]
-  (let [fields (s/split s #"\t")]
+  (let [[fields] (csv/parse-csv s)]
     (concat fields (repeat (- 12 (count fields)) nil))))
 
 (defn- split-line [s min-cols]
-  (let [fields (s/split s #"\t")]
+  (let [fields (first (csv/parse-csv s :delimiter \tab))]
     (take min-cols (concat fields (repeat (- min-cols (count fields)) nil)))))
 
 (defn remove-line-breaks [s]
@@ -29,6 +30,9 @@
 
 (defn clean-bio [s]
   (s/replace s #"[^\w \.@/:'\",!#\$%^&\*()_\+\-]" " "))
+
+(defn clean-user-id [s]
+  (.toUpperCase (s/replace s #"[\s]" "")))
 
 (defn company [input trap]
   (<- [?oc-id ?company-number !name !company-type !current-status
@@ -96,14 +100,20 @@
 
 (defn uk-only [s]
   (some->> s
-           (re-find #"(?i)(?:\b(UK|London|Bath|Birmingham|Bradford|Brighton & Hove|Bristol|Cambridge|Canterbury|Carlisle|Chelmsford|Chester|Chichester|Coventry|Derby|Durham|Ely|Exeter|Gloucester|Hereford|Kingston upon Hull|Lancaster|Leeds|Leicester|Lichfield|Lincoln|Livercpool|London|Manchester|Newcastle upon Tyne|Norwich|Nottingham|Oxford|Peterborough|Plymouth|Portsmouth|Preston|Ripon|Salford|Salisbury|Sheffield|Southampton|St Albans|Stoke-on-Trent|Sunderland|Truro|Wakefield|Wells|Westminster|Winchester|Wolverhampton|Worcester|York)\b)")
+           (re-find #"(?i)(?:\b(UK|London|Bath|Birmingham|Bradford|Brighton & Hove|Brighton and Hove|Bristol|Cambridge|Canterbury|Carlisle|Chelmsford|Chester|Chichester|Coventry|Derby|Durham|Ely|Exeter|Gloucester|Hereford|Kingston upon Hull|Lancaster|Leeds|Leicester|Lichfield|Lincoln|Liverpool|London|Manchester|Newcastle upon Tyne|Norwich|Nottingham|Oxford|Peterborough|Plymouth|Portsmouth|Preston|Ripon|Salford|Salisbury|Sheffield|Southampton|St\.? Albans|Stoke-on-Trent|Sunderland|Truro|Wakefield|Wells|Westminster|Winchester|Wolverhampton|Worcester|York)\b)")
            first
            s/upper-case))
 
-(defn map-location [s]
-  (some-> s
+(defn best-location [& ls]
+  (reduce
+   (fn [a c] (if (= a "UK") 
+              (or c a) 
+              (or a c))) ls))
+
+(defn map-location [l]
+  (some-> l
           normalise-uk
-          uk-only))
+           uk-only))
 
 (defn stackoverflow-locations [users trap]
   (<- [!location ?count]
@@ -119,7 +129,7 @@
       (ops/!count !location :> ?count)
       (:trap trap)))
 
-(defmapcatfn extract-urls [s]
+(defmapcatop extract-urls [s]
   (when s (map (comp  vector second) (re-seq #"(https?://[/\w\.]+)" s))))
 
 (defn stackoverflow-about-me-match [users trap]
@@ -150,12 +160,13 @@
        ?created_at ?site_admin ?url ?email ?type 
        ?public_gists ?hireable ?blog  ?company]
    (input
-             ?id ?login ?followers ?following ?gravatar_id 
+             ?id ?login-dirty ?followers ?following ?gravatar_id 
              ?name ?updated_at ?bio-dirty ?location-dirty ?public_repos 
              ?created_at ?site_admin ?url ?email ?type 
              ?public_gists ?hireable ?blog  ?company)
    (clean-bio ?bio-dirty :> ?bio)
-   (map-location ?location-dirty :> ?location)
+   (clean-user-id ?login-dirty :> ?login)
+;   (map-location ?location-dirty :> ?location)
    (:trap trap)))
 
 (defn stackoverflow-users-uk [users trap]
@@ -184,14 +195,27 @@
       (map-location ?location-dirty :> ?location)
       (:trap trap)))
 
-(defn joined-stackoverflow-github [stackoverflow github trap]
-  (<- [?userid ?location !age ?so-up-votes ?so-down-votes ?so-reputation ?so-url ?gh-followers ?gh-following ?gh-name ?gh-bio ?gh-repos
-       ?gh-url ?gh-blog ?gh-company]
-      (stackoverflow ?so-line)
-      (github ?gh-line)
-            
-      (split-line ?so-line 12 :>  _ ?userid !age ?so-up-votes _ _ ?so-down-votes ?so-reputation ?location ?so-url _ _)
-      (split-line ?gh-line 19 :>  _ ?userid ?gh-followers ?gh-following _ ?gh-name _ ?gh-bio ?location ?gh-repos _ _ ?gh-url _ _ _ _ ?gh-blog ?gh-company)))
+(defn stackoverflow-cleanid [stackoverflow-in]
+  (<- [?userid ?so-up-votes ?so-down-votes ?so-reputation ?location ?so-url]
+      (stackoverflow-in ?so-line)
+      (split-line ?so-line 12 :>  _ ?userid-dirty _ ?so-up-votes _ _ ?so-down-votes ?so-reputation ?location-dirty ?so-url _ _)
+      (clean-user-id ?userid-dirty :> ?userid)
+      (map-location ?location-dirty :> ?location)))
+
+(defn github-cleanid [github-in]
+  (<- [?userid ?gh-followers ?gh-following ?gh-name ?gh-bio ?location ?gh-repos ?gh-url ?gh-blog ?gh-company]
+      (github-in :> ?gh-line)
+      (split-line ?gh-line 19 :>  _ ?userid-dirty ?gh-followers ?gh-following _ ?gh-name _ ?gh-bio ?location-dirty ?gh-repos _ _ ?gh-url _ _ _ _ ?gh-blog ?gh-company)
+      (clean-user-id ?userid-dirty :> ?userid)
+      (map-location ?location-dirty :> ?location)))
+
+(defn joined-stackoverflow-github [stackoverflow-in github-in trap]
+  (<- [?userid ?location ?so-up-votes ?so-down-votes ?so-reputation ?so-url ?gh-followers ?gh-following ?gh-name ?gh-bio ?gh-repos ?gh-url ?gh-blog ?gh-company]
+
+      (stackoverflow-in :> ?userid ?so-up-votes ?so-down-votes ?so-reputation ?location-so ?so-url)
+      (github-in :> ?userid ?gh-followers ?gh-following ?gh-name ?gh-bio ?location-gh ?gh-repos ?gh-url ?gh-blog ?gh-company)
+      (best-location ?location-so ?location-gh :> ?location)
+      (:distinct true)))
 
 (defn generate-officer-counts [officer-in officer-counts-out trap-base]
   (?- (hfs-delimited officer-counts-out :sinkmode :replace :compress? true)
@@ -199,7 +223,6 @@
                (hfs-delimited (str trap-base "/officer")))
 
        (hfs-delimited (str trap-base "/rels"))))
-
 (defn generate-company-officer-relations [company-in officer-in relations-out trap-base]
   (?- (hfs-delimited relations-out :sinkmode :replace :compress? true)
       (rels
@@ -208,17 +231,14 @@
        (officer (hfs-textline officer-in :skip-header? true)
                 (hfs-delimited (str trap-base "/officer")))
        (hfs-delimited (str trap-base "/rels")))))
-
 (defn generate-stackoverflow-locations [users-in locations-out trap-base]
   (?- (hfs-delimited locations-out :sinkmode :replace :compress? true)
       (stackoverflow-locations (hfs-textline users-in)
                                (hfs-delimited (str trap-base "/so-locations")))))
-
 (defn generate-stackoverflow-urls [users-in locations-out trap-base]
   (?- (hfs-delimited locations-out :sinkmode :replace :compress? true)
       (stackoverflow-locations (hfs-textline users-in)
                                (hfs-delimited (str trap-base "/so-locations")))))
-
 (defn generate-officer-locations [officer-in locations-out trap-base]
   (?- (hfs-delimited locations-out :sinkmode :replace :compress? true)
       (officer-locations (hfs-textline officer-in :skip-header? true)
@@ -240,15 +260,15 @@
 
 (defn generate-joined-uk [stackoverflow-in github-in joined-out trap-base]
   (?- (hfs-delimited joined-out :sinkmode :replace :compress? false)
-      (joined-stackoverflow-github (hfs-textline stackoverflow-in)
-                                   (hfs-textline github-in)
+      (joined-stackoverflow-github (stackoverflow-cleanid (hfs-textline stackoverflow-in))
+                                   (github-cleanid (hfs-textline github-in))
                                    (hfs-delimited (str trap-base "/joined-uk")))))
 
 #_(generate-stackoverflow-about-me-match "data/stackoverflow/Users.tsv.bz2"
                                          "output/so-urls"
                                          "output/errors")
 
-#_(generate-stackoverflow-uk "data/stackoverflow/Users.tsv.bz2"
+#_(generate-stackoverflow-uk "data/stackoverflow/Users.tsv"
                              "output/stackoverflow-uk"
                              "output/errors")
 
@@ -256,7 +276,7 @@
                       "output/github-uk"
                       "output/errors")
 
-#_(generate-joined-uk "output/stackoverflow-uk"
-                      "output/github-uk"
+#_(generate-joined-uk "data/stackoverflow/Users.tsv" 
+                      "data/github/users/"
                       "output/joined-uk"
                       "output/errors")
