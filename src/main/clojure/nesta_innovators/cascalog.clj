@@ -155,40 +155,17 @@
       (:trap trap)))
 
 (defn github-users-uk [input trap]
-  (<- [?id ?login ?followers ?following ?gravatar_id 
-       ?name ?updated_at ?bio ?location ?public_repos 
-       ?created_at ?site_admin ?url ?email ?type 
-       ?public_gists ?hireable ?blog  ?company]
-   (input
-             ?id ?login-dirty ?followers ?following ?gravatar_id 
-             ?name ?updated_at ?bio-dirty ?location-dirty ?public_repos 
-             ?created_at ?site_admin ?url ?email ?type 
-             ?public_gists ?hireable ?blog  ?company)
+  (<- [?userid ?followers ?following ?name ?bio ?location ?repos ?url ?blog ?company]
+   (input :>
+          _ ?userid ?followers ?following ?name ?bio-dirty ?location-dirty ?repos ?url ?blog ?company)
    (clean-bio ?bio-dirty :> ?bio)
-   (clean-user-id ?login-dirty :> ?login)
-;   (map-location ?location-dirty :> ?location)
+   (map-location ?location-dirty :> ?location)
    (:trap trap)))
 
-(defn stackoverflow-users-uk [users trap]
-  (<- [?so-id !nesta-identity !age !up-votes !last-access-date
-       !creation-date !down-votes !reputation ?location
-       !website-url !profile-image-url !views]
-      (users ?line)
-      (split-line ?line 13 :#> 13
-                  { 0 ?so-id
-                    1 !nesta-identity
-                    2 !age
-                    3 !up-votes
-                    4 !last-access-date
-                    5 !creation-date
-                    6 !down-votes
-                    7 !reputation
-                    8 ?location-dirty
-                    9 !website-url
-                   10 !profile-image-url
-                   11 !views
-                   12 !email-hash}
-                  )
+(defn stackoverflow-users-uk [input trap]
+  (<- [?userid ?so-up-votes ?so-down-votes ?so-reputation ?location-dirty ?so-url]
+      (input :> ?userid ?so-up-votes ?so-down-votes ?so-reputation ?location-dirty ?so-url)
+    
       ;; (parse-date !last-access-date-dirty :> !last-access-date)
       ;; (parse-date !creation-date-dirty :> !creation-date)v
       ;; (remove-line-breaks !about-me-dirty :> !about-me)
@@ -203,9 +180,9 @@
       (map-location ?location-dirty :> ?location)))
 
 (defn github-cleanid [github-in]
-  (<- [?userid ?gh-followers ?gh-following ?gh-name ?gh-bio ?location ?gh-repos ?gh-url ?gh-blog ?gh-company]
+  (<- [?gh-id ?userid ?gh-followers ?gh-following ?gh-name ?gh-bio ?location ?gh-repos ?gh-url ?gh-blog ?gh-company]
       (github-in :> ?gh-line)
-      (split-line ?gh-line 19 :>  _ ?userid-dirty ?gh-followers ?gh-following _ ?gh-name _ ?gh-bio ?location-dirty ?gh-repos _ _ ?gh-url _ _ _ _ ?gh-blog ?gh-company)
+      (split-line ?gh-line 20 :> _ ?gh-id ?userid-dirty ?gh-followers ?gh-following _ ?gh-name _ ?gh-bio ?location-dirty ?gh-repos _ _ ?gh-url _ _ _ _ ?gh-blog ?gh-company)
       (clean-user-id ?userid-dirty :> ?userid)
       (map-location ?location-dirty :> ?location)))
 
@@ -214,8 +191,8 @@
 
       (stackoverflow-in :> ?userid ?so-up-votes ?so-down-votes ?so-reputation ?location-so ?so-url)
       (github-in :> ?userid ?gh-followers ?gh-following ?gh-name ?gh-bio ?location-gh ?gh-repos ?gh-url ?gh-blog ?gh-company)
-      (best-location ?location-so ?location-gh :> ?location)
-      (:distinct true)))
+      ;(best-location ?location-so ?location-gh :> ?location)
+      (identity ?location-gh :> ?location)))
 
 (defn generate-officer-counts [officer-in officer-counts-out trap-base]
   (?- (hfs-delimited officer-counts-out :sinkmode :replace :compress? true)
@@ -250,19 +227,19 @@
 
 (defn generate-github-uk [users-in uk-users-out trap-base]
   (?- (hfs-delimited uk-users-out :sinkmode :replace :compress? false :quoted? (constantly true))
-      (github-users-uk (hfs-delimited users-in)
+      (github-users-uk (github-cleanid (hfs-textline users-in))
                        (hfs-delimited (str trap-base "/github-uk")))))
 
-(defn generate-stackoverflow-uk [users-in uk-users-out trap-base]
+(defn generate-stackoverflow-uk [stackoverflow-in uk-users-out trap-base]
   (?- (hfs-delimited uk-users-out :sinkmode :replace :compress? false)
-      (stackoverflow-users-uk (hfs-textline users-in)
+      (stackoverflow-users-uk (stackoverflow-cleanid (hfs-textline stackoverflow-in))
                        (hfs-delimited (str trap-base "/stackoverflow-uk")))))
 
-(defn generate-joined-uk [stackoverflow-in github-in joined-out trap-base]
+(defn generate-joined [stackoverflow-in github-in joined-out trap-base]
   (?- (hfs-delimited joined-out :sinkmode :replace :compress? false)
       (joined-stackoverflow-github (stackoverflow-cleanid (hfs-textline stackoverflow-in))
                                    (github-cleanid (hfs-textline github-in))
-                                   (hfs-delimited (str trap-base "/joined-uk")))))
+                                   (hfs-delimited (str trap-base "/joined")))))
 
 #_(generate-stackoverflow-about-me-match "data/stackoverflow/Users.tsv.bz2"
                                          "output/so-urls"
@@ -276,7 +253,7 @@
                       "output/github-uk"
                       "output/errors")
 
-#_(generate-joined-uk "data/stackoverflow/Users.tsv" 
-                      "data/github/users/"
-                      "output/joined-uk"
-                      "output/errors")
+#_(generate-joined "data/stackoverflow-1.tsv" 
+                   "data/github-1.tsv"
+                   "output/joined-uk"
+                   "output/errors")

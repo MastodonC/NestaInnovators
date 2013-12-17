@@ -118,9 +118,9 @@
      (let [r (<! (request-and-process (->uri  "users" login)))]
        (when (= (:status r) 200)
          (-> r
-             :body
-             clean
-             (assoc-header r :etag)))))))
+            :body
+            clean
+            (assoc-header r :etag)))))))
 
 (defn user-followers
   "Takes a github user login and returns a channel containing a
