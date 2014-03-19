@@ -1,0 +1,22 @@
+* data [69%]
+- [X] filter out all 0 follower/following users
+- [X] filter uk only users
+- [X] take all users with more than 10 followers and their followers. [sanity check at this point: is it a manageable number?]
+- [X] identify top X tech by location and vice versa
+- [X] identify top X tech by companies 
+- [X] who do the innovators follow
+- [ ] supply list of company names and URLs to Chris Taggart (OC) to see if he can match them
+- [X] match the gh & SO user ids of top innovators
+- [ ] calculate the centrality (closeness and in between) within their
+- [ ] run all on prod data
+  own networks
+- [X] who are the top X users following?
+- [ ] OC once we find the top X tech companies who are their
+  directors?  Do they run other innovative cos?
+
+- [X] for tech by location filter out all listed as UK and filter out
+  all tech listed at "", in by-company get rid of all "UNLISTED"
+
+* Front end [50%]
+- [X] list view all above filters
+- [ ] sigma.js of all above categories (if possible!) - e.g. sigma.js page of manchester innovators and their followers, assuming size is practical

@@ -1,0 +1,119 @@
+; CIDER 0.6.0snapshot (package: 20140125.2304) (Clojure 1.5.1, nREPL 0.2.3)
+user> (go)
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading (webapp.parser webapp.core webapp.core-test)
+:reloading webapp (webapp.parser webapp.core webapp.core-test)
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+Component failed to initialize (check the logs): :innovators/cljs-builder
+:ready
+user> (reset)
+:reloading (webapp.parser webapp.core webapp.core-test)
+:reloading webapp (webapp.parser webapp.core webapp.core-test)
+:ready
+user> (reset)
+:reloading (webapp.parser webapp.core webapp.core-test)
+:reloading webapp (webapp.parser webapp.core webapp.core-test)
+:ready
+user> (into [] [1 2 3] [1 2 3])
+ArityException Wrong number of args (3) passed to: core$into  clojure.lang.AFn.throwArity (AFn.java:437)
+user> (merge [1 2] [3 4])
+[1 2 [3 4]]
+user> (vec 
+ArityException Wrong number of args (2) passed to: core$vec  clojure.lang.AFn.throwArity (AFn.java:437)
+user> (assoc [] [1 2 3] [1 2 3])
+IllegalArgumentException Key must be integer  clojure.lang.APersistentVector.assoc (APersistentVector.java:316)
+user> (into [] [[1 2 3] [1 2 3]])
+[[1 2 3] [1 2 3]]
+user> (reset)
+:reloading (webapp.parser webapp.core webapp.core-test)
+:reloading webapp (webapp.parser webapp.core webapp.core-test)
+:ready
+user> (reset)
+:reloading (webapp.parser webapp.core webapp.core-test)
+:reloading webapp (webapp.parser webapp.core webapp.core-test)
+:ready
+user> (reset)
+:reloading (webapp.core webapp.core-test)
+:reloading webapp (webapp.core webapp.core-test)
+:ready
+user> (into [] (for [x [1 2 3] [12 4]] x)
+	    )
+CompilerException java.lang.IllegalArgumentException: for requires an even number of forms in binding vector in user:1, compiling:(/tmp/form-init6698106150627456977.clj:1:10) 
+user> (reset)
+:reloading (webapp.core webapp.core-test)
+:reloading webapp (webapp.core webapp.core-test)
+:ready
+user> (reset)
+:reloading (webapp.core webapp.core-test)
+:reloading webapp (webapp.core webapp.core-test)
+:ready
+user> (reset)
+:reloading ()
+:reloading webapp ()
+:ready
+user> (reset)
+:reloading (webapp.core webapp.core-test)
+:reloading webapp (webapp.core webapp.core-test)
+:ready
+user> (reset)
+:reloading (webapp.core webapp.core-test)
+:reloading webapp (webapp.core webapp.core-test)
+:ready
+user> (concat [1 2 3] [4 5 6])
+(1 2 3 4 5 6)
+user> (vec [1 2 3] [4 5 6])
+ArityException Wrong number of args (2) passed to: core$vec  clojure.lang.AFn.throwArity (AFn.java:437)
+user> (into [] [1 2 3] [3 5])
+ArityException Wrong number of args (3) passed to: core$into  clojure.lang.AFn.throwArity (AFn.java:437)
+user> (into [] [[1 2 3] [3 5]])
