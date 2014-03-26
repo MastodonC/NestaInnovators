@@ -39,8 +39,7 @@
       (map-location ?location :> ?clean-location)
       (clean-companies ?company :> ?c-company)
       (int-it ?followers :> ?int-follow)
-      ;;increase to 10 eventually
-      (> ?int-follow 3)
+      (> ?int-follow 10)
       ))
 
 #_(?- (stdout)
@@ -91,16 +90,11 @@
 #_(?- (stdout)
     (top-companies (hfs-delimited "output/users" :delimiter ",")))
 
-(defn over-twenty [users-input]
-  (<- [?login]
-      (users-input :> ?id ?login ?followers ?following ?name ?location ?company)
-      (> ?followers 20)))
-
 (defn innovators-following [users-input following]
   (<- [?login ?followee]
       (following :> ?line)
       (split-line ?line 2 :> ?login ?followee)
-      (over-twenty users-input :> ?login)))
+      (users-input :> ?id ?login ?followers ?following ?name ?location ?company)))
 
 #_(?- (stdout)
    ;;(hfs-delimited "output/innovators-following" :delimiter "," :sinkmode :replace)
@@ -110,17 +104,16 @@
 (defn innovators-followee [users-input following]
   (<- [?follower ?login]
       (users-input :> ?id ?login ?followers ?following ?name ?location ?company)
-      (> ?follwers 20)
       (following :> ?line)
       (split-line ?line 2 :> ?follower ?login)))
 
-#_(?- ("output/following-innovators")
+#_(?- (stdout)
     (innovators-following (gh-uk-only (hfs-textline "test-data/github/users/"))
                           (hfs-textline "test-data/github/followers")))
 
 ;; gets the initial details of programmers in the UK with more than 3 followers
 ;; with the tech that they are working on as well as the companies they work in and who they are following
-(defn -main [in gh-uk repos-in followers-in tech-by-location by-company innovators-by-location innovators-following-out]
+(defn -main [in gh-uk repos-in followers-in tech-by-location by-company innovators-by-location innovators-following-out innovators-followee-out]
   (workflow
    ["/tmp/checkpoint"]
    gh-users-step ([:tmp-dirs [gh-users-temp]]
@@ -149,10 +142,14 @@
    social-network-step ([:deps [gh-users-step]]
                           (?- (hfs-delimited innovators-following-out :sinkmode :replace :delimiter ",")
                               (innovators-following (hfs-delimited gh-users-temp :delimiter ",")
+                                                    (hfs-textline followers-in))))
+   followees ([:deps [gh-users-step]]
+                (?- (hfs-delimited innovators-followee-out :sinkmode :replace :delimiter ",")
+                    (innovators-followee (hfs-delimited gh-users-temp :delimiter ",")
                                                     (hfs-textline followers-in))))))
 
 
 
-#_(-main "test-data/github/users/" "output/users" "test-data/github/repositories" "test-data/github/followers" "output/tech-by-location" "output/by-company" "output/innovators-by-location" "output/innovators-following")
+#_(-main "test-data/github/users/" "output/users" "test-data/github/repositories" "test-data/github/followers" "output/tech-by-location" "output/by-company" "output/innovators-by-location" "output/innovators-following" "output/followees")
 
 

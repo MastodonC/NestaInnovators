@@ -16,114 +16,37 @@
   (html
    [:head
     [:title "Nesta Innovators Project"]
-    (include-js "/js/jquery-1.11.0.min.js" "/js/d3/d3.js" "/bootstrap/js/bootstrap.js" "/js/analytics.js" "js/barchart.js")
+    (include-js "/js/jquery-1.11.0.min.js" "/js/d3/d3.js" "/bootstrap/js/bootstrap.js" "/js/analytics.js" "http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js") 
     (include-css "/bootstrap/css/bootstrap.css" "/css/style.css")]
    [:body
     [:content
      [:h1 "Nesta Technology Innovators"]
-     [:div#individuals.chart]
-     [:div#companies.chart]
-     [:div#technology.chart]
-     [:div#location.chart]
-     [:div#groupedbar.chart]]
-    (include-js "/cljs/main.js")
-    [:script
-     "
-
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var x0 = d3.scale.ordinal()
-    .rangeRoundBands([0, width], .1);
-
-var x1 = d3.scale.ordinal();
-
-var y = d3.scale.linear()
-    .range([height, 0]);
-
-var color = d3.scale.ordinal()
-    .range([\"#98abc5\", \"#8a89a6\", \"#7b6888\", \"#6b486b\", \"#a05d56\", \"#d0743c\", \"#ff8c00\"]);
-
-var xAxis = d3.svg.axis()
-    .scale(x0)
-    .orient(\"bottom\");
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient(\"left\")
-    .tickFormat(d3.format(\".2s\"));
-
-var svg = d3.select(\"body\").append(\"svg\")
-    .attr(\"width\", width + margin.left + margin.right)
-    .attr(\"height\", height + margin.top + margin.bottom)
-  .append(\"g\")
-    .attr(\"transform\", \"translate(\" + margin.left + \",\" + margin.top + \")\");
-
-d3.csv(\"/js/data.csv\", function(error, data) {
-
-    var ageNames = d3.keys(data[0]).filter(function(key) { return key !== \"State\"; });
-
-    data.forEach(function(d) {
-        d.ages = ageNames.map(function(name) { return {name: name, value: +d[name]}; });
-    });
-
-    x0.domain(data.map(function(d) { return d.State; }));
-    x1.domain(ageNames).rangeRoundBands([0, x0.rangeBand()]);
-    y.domain([0, d3.max(data, function(d) { return d3.max(d.ages, function(d) { return d.value; }); })]);
-
-    svg.append(\"g\")
-        .attr(\"class\", \"x axis\")
-        .attr(\"transform\", \"translate(0,\" + height + \")\")
-        .call(xAxis);
-
-    svg.append(\"g\")
-        .attr(\"class\", \"y axis\")
-        .call(yAxis)
-        .append(\"text\")
-        .attr(\"transform\", \"rotate(-90)\")
-        .attr(\"y\", 6)
-        .attr(\"dy\", \".71em\")
-        .style(\"text-anchor\", \"end\")
-        .text(\"Popularity\");
-
-    var state = svg.selectAll(\".state\")
-        .data(data)
-        .enter().append(\"g\")
-        .attr(\"class\", \"g\")
-        .attr(\"transform\", function(d) { return \"translate(\" + x0(d.State) + \",0)\"; });
-
-    state.selectAll(\"rect\")
-        .data(function(d) { return d.ages; })
-        .enter().append(\"rect\")
-        .attr(\"width\", x1.rangeBand())
-        .attr(\"x\", function(d) { return x1(d.name); })
-        .attr(\"y\", function(d) { return y(d.value); })
-        .attr(\"height\", function(d) { return height - y(d.value); })
-        .style(\"fill\", function(d) { return color(d.name); });
-
-    var legend = svg.selectAll(\".legend\")
-        .data(ageNames.slice().reverse())
-        .enter().append(\"g\")
-        .attr(\"class\", \"legend\")
-        .attr(\"transform\", function(d, i) { return \"translate(0,\" + i * 20 + \")\"; });
-
-    legend.append(\"rect\")
-        .attr(\"x\", width - 18)
-        .attr(\"width\", 18)
-        .attr(\"height\", 18)
-        .style(\"fill\", color);
-
-    legend.append(\"text\")
-        .attr(\"x\", width - 24)
-        .attr(\"y\", 9)
-        .attr(\"dy\", \".35em\")
-        .style(\"text-anchor\", \"end\")
-        .text(function(d) { return d; });
-});
-
-"]]
-   ))
+     [:div#article
+      [:h2 "Blurb"]
+      [:p "
+	
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Typi non habent claritatem insitam; est usus legentis in iis qui facit eorum claritatem. Investigationes demonstraverunt lectores legere me lius quod ii legunt saepius. Claritas est etiam processus dynamicus, qui sequitur mutationem consuetudium lectorum. Mirum est notare quam littera gothica, quam nunc putamus parum claram, anteposuerit litterarum formas humanitatis per seacula quarta decima et quinta decima. Eodem modo typi, qui nunc nobis videntur parum clari, fiant sollemnes in futurum."]
+      ]
+     [:div.row
+      [:div#by-individual.col-md-6
+       [:h2 "Top Innovators"]
+       [:div.row [:svg#individuals {:class "chart col-md-8"}
+                ;;  (include-js "/js/individuals.js")
+                  ]
+        [:p.col-md-4 "Explain this chart"]]]
+      
+      [:div#by-company.col-md-6 [:h2 "Innovations by Company"]
+       [:div.row [:svg#companies {:class "chart col-md-8"}]
+        [:p.col-md-4 "Explain this chart"]
+        ]]]
+     [:div.row [:div#by-location.col-md-6 [:h2 "Innovation by City"]
+                [:div.row [:svg#location {:class "chart col-md-8"}
+                           ]
+                 [:p.col-md-4 "Explain this chart"]]]
+      [:div#heatmap.col-md-6
+       [:div.row [:h2 "Technology Heatmap"] [:img {:class "col-md-8" :src "/img/heatmap.png"}]
+        [:p.col-md-4 "Explain this chart"]]]]]]
+   (include-js "/js/location.js" "/js/individuals.js" "/js/company.js") ))
 
 (def home-dir "/home/yods/work/innovators")
 ;;change this !!
@@ -139,10 +62,6 @@ d3.csv(\"/js/data.csv\", function(error, data) {
   (route/resources "target/js" {:root "js"})
   (GET "/" [] index)
   ;;give me the top twenty
-  (GET "/individuals" [] (top-n (:individuals data) 20 2))
-  (GET "/by-location" [] (top-n (:by-location data) 20 1))
-  (GET "/by-tech" [] (top-n (:tech-location data) 20 2))
-  (GET "/by-company" [] (top-n (:by-company data) 20 1))
   (route/not-found "<h1>Page not found</h1>"))
 
 (def app
