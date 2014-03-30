@@ -81,14 +81,13 @@
       (tech-by-city (gh-uk-only (hfs-textline "test-data/github/users/"))
                     (repos (hfs-textline "test-data/github/repositories/"))))
 
+
 (defn top-companies [input]
   "companies with and count of innovators"
   (<- [?company ?count]
       (input :> ?id ?login ?followers ?following ?name ?location ?company)
       (c/count ?count)))
 
-#_(?- (stdout)
-    (top-companies (hfs-delimited "output/users" :delimiter ",")))
 
 (defn innovators-following [users-input following]
   (<- [?login ?followee]
@@ -113,6 +112,7 @@
 
 ;; gets the initial details of programmers in the UK with more than 3 followers
 ;; with the tech that they are working on as well as the companies they work in and who they are following
+
 (defn -main [in gh-uk repos-in followers-in tech-by-location by-company innovators-by-location innovators-following-out innovators-followee-out]
   (workflow
    ["/tmp/checkpoint"]
