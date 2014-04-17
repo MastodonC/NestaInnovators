@@ -3,9 +3,9 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :uberjar-name "innovators.jar"
-  :aot [data-processing.core]
-  :main data-processing.core
+  :uberjar-name "innovators2.jar"
+  :aot [data-processing.munging]
+  :main data-processing.munging
   :exclusions [org.clojure/clojure]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [cascalog "1.10.2"]
